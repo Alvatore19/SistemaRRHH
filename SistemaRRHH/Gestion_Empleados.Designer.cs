@@ -29,8 +29,7 @@
         private void InitializeComponent()
         {
             this.txtNombre = new System.Windows.Forms.TextBox();
-            this.txtCargo = new System.Windows.Forms.TextBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.grup = new System.Windows.Forms.GroupBox();
             this.txtSueldo = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.cmbJefe = new System.Windows.Forms.ComboBox();
@@ -46,6 +45,7 @@
             this.cmbEliminar = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.label13 = new System.Windows.Forms.Label();
             this.btnActualizar = new System.Windows.Forms.Button();
             this.cmbActualizarJefe = new System.Windows.Forms.ComboBox();
             this.label11 = new System.Windows.Forms.Label();
@@ -57,19 +57,23 @@
             this.txtActualizarNombre = new System.Windows.Forms.TextBox();
             this.cmbActualizarSeleccion = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
-            this.label13 = new System.Windows.Forms.Label();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.txtNuevoCargoFusion = new System.Windows.Forms.TextBox();
+            this.cmbFusion2 = new System.Windows.Forms.ComboBox();
+            this.label14 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.rbJefe2 = new System.Windows.Forms.RadioButton();
+            this.rbJefe1 = new System.Windows.Forms.RadioButton();
             this.btnFusionar = new System.Windows.Forms.Button();
             this.cmbFusion1 = new System.Windows.Forms.ComboBox();
-            this.rbJefe1 = new System.Windows.Forms.RadioButton();
-            this.rbJefe2 = new System.Windows.Forms.RadioButton();
-            this.label12 = new System.Windows.Forms.Label();
-            this.label14 = new System.Windows.Forms.Label();
-            this.cmbFusion2 = new System.Windows.Forms.ComboBox();
-            this.txtNuevoCargoFusion = new System.Windows.Forms.TextBox();
             this.panelStats = new System.Windows.Forms.Panel();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
-            this.groupBox1.SuspendLayout();
+            this.label15 = new System.Windows.Forms.Label();
+            this.txtDui = new System.Windows.Forms.TextBox();
+            this.cmbCargo = new System.Windows.Forms.ComboBox();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label16 = new System.Windows.Forms.Label();
+            this.grup.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -83,42 +87,37 @@
             this.txtNombre.Size = new System.Drawing.Size(316, 20);
             this.txtNombre.TabIndex = 0;
             // 
-            // txtCargo
+            // grup
             // 
-            this.txtCargo.Location = new System.Drawing.Point(65, 50);
-            this.txtCargo.Name = "txtCargo";
-            this.txtCargo.Size = new System.Drawing.Size(160, 20);
-            this.txtCargo.TabIndex = 1;
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.txtSueldo);
-            this.groupBox1.Controls.Add(this.label4);
-            this.groupBox1.Controls.Add(this.cmbJefe);
-            this.groupBox1.Controls.Add(this.label3);
-            this.groupBox1.Controls.Add(this.btnIngresarEmpleado);
-            this.groupBox1.Controls.Add(this.label2);
-            this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Controls.Add(this.txtNombre);
-            this.groupBox1.Controls.Add(this.txtCargo);
-            this.groupBox1.Location = new System.Drawing.Point(12, 16);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(397, 154);
-            this.groupBox1.TabIndex = 2;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Contratar";
+            this.grup.Controls.Add(this.cmbCargo);
+            this.grup.Controls.Add(this.txtDui);
+            this.grup.Controls.Add(this.label15);
+            this.grup.Controls.Add(this.txtSueldo);
+            this.grup.Controls.Add(this.label4);
+            this.grup.Controls.Add(this.cmbJefe);
+            this.grup.Controls.Add(this.label3);
+            this.grup.Controls.Add(this.btnIngresarEmpleado);
+            this.grup.Controls.Add(this.label2);
+            this.grup.Controls.Add(this.label1);
+            this.grup.Controls.Add(this.txtNombre);
+            this.grup.Location = new System.Drawing.Point(12, 16);
+            this.grup.Name = "grup";
+            this.grup.Size = new System.Drawing.Size(397, 154);
+            this.grup.TabIndex = 2;
+            this.grup.TabStop = false;
+            this.grup.Text = "Empleado";
             // 
             // txtSueldo
             // 
-            this.txtSueldo.Location = new System.Drawing.Point(307, 52);
+            this.txtSueldo.Location = new System.Drawing.Point(284, 52);
             this.txtSueldo.Name = "txtSueldo";
-            this.txtSueldo.Size = new System.Drawing.Size(74, 20);
+            this.txtSueldo.Size = new System.Drawing.Size(97, 20);
             this.txtSueldo.TabIndex = 7;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(254, 55);
+            this.label4.Location = new System.Drawing.Point(240, 55);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(43, 13);
             this.label4.TabIndex = 6;
@@ -129,7 +128,7 @@
             this.cmbJefe.FormattingEnabled = true;
             this.cmbJefe.Location = new System.Drawing.Point(64, 83);
             this.cmbJefe.Name = "cmbJefe";
-            this.cmbJefe.Size = new System.Drawing.Size(317, 21);
+            this.cmbJefe.Size = new System.Drawing.Size(161, 21);
             this.cmbJefe.TabIndex = 5;
             // 
             // label3
@@ -186,7 +185,7 @@
             this.groupBox2.Controls.Add(this.label5);
             this.groupBox2.Location = new System.Drawing.Point(12, 453);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(397, 123);
+            this.groupBox2.Size = new System.Drawing.Size(397, 126);
             this.groupBox2.TabIndex = 4;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Despedir";
@@ -207,10 +206,11 @@
             this.label6.Size = new System.Drawing.Size(129, 13);
             this.label6.TabIndex = 9;
             this.label6.Text = "Subalternos asignados a :";
+            this.label6.Click += new System.EventHandler(this.label6_Click);
             // 
             // btnEliminar
             // 
-            this.btnEliminar.Location = new System.Drawing.Point(8, 87);
+            this.btnEliminar.Location = new System.Drawing.Point(10, 87);
             this.btnEliminar.Name = "btnEliminar";
             this.btnEliminar.Size = new System.Drawing.Size(375, 23);
             this.btnEliminar.TabIndex = 8;
@@ -238,6 +238,8 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.textBox1);
+            this.groupBox3.Controls.Add(this.label16);
             this.groupBox3.Controls.Add(this.label13);
             this.groupBox3.Controls.Add(this.btnActualizar);
             this.groupBox3.Controls.Add(this.cmbActualizarJefe);
@@ -257,6 +259,17 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Actualizar Datos";
             // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.ForeColor = System.Drawing.SystemColors.ActiveBorder;
+            this.label13.Location = new System.Drawing.Point(20, 57);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(352, 13);
+            this.label13.TabIndex = 20;
+            this.label13.Text = "---------------------------------------------------------------------------------" +
+    "----------------------------------";
+            // 
             // btnActualizar
             // 
             this.btnActualizar.Location = new System.Drawing.Point(6, 192);
@@ -272,7 +285,7 @@
             this.cmbActualizarJefe.FormattingEnabled = true;
             this.cmbActualizarJefe.Location = new System.Drawing.Point(65, 155);
             this.cmbActualizarJefe.Name = "cmbActualizarJefe";
-            this.cmbActualizarJefe.Size = new System.Drawing.Size(307, 21);
+            this.cmbActualizarJefe.Size = new System.Drawing.Size(160, 21);
             this.cmbActualizarJefe.TabIndex = 18;
             // 
             // label11
@@ -286,19 +299,20 @@
             // 
             // txtActualizarSueldo
             // 
-            this.txtActualizarSueldo.Location = new System.Drawing.Point(303, 116);
+            this.txtActualizarSueldo.Location = new System.Drawing.Point(284, 119);
             this.txtActualizarSueldo.Name = "txtActualizarSueldo";
-            this.txtActualizarSueldo.Size = new System.Drawing.Size(78, 20);
+            this.txtActualizarSueldo.Size = new System.Drawing.Size(97, 20);
             this.txtActualizarSueldo.TabIndex = 16;
             // 
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(254, 119);
+            this.label10.Location = new System.Drawing.Point(238, 122);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(43, 13);
             this.label10.TabIndex = 8;
             this.label10.Text = "Sueldo:";
+            this.label10.Click += new System.EventHandler(this.label10_Click);
             // 
             // label9
             // 
@@ -350,17 +364,6 @@
             this.label7.TabIndex = 11;
             this.label7.Text = "Seleccione empleado :";
             // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.ForeColor = System.Drawing.SystemColors.ActiveBorder;
-            this.label13.Location = new System.Drawing.Point(20, 57);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(352, 13);
-            this.label13.TabIndex = 20;
-            this.label13.Text = "---------------------------------------------------------------------------------" +
-    "----------------------------------";
-            // 
             // groupBox4
             // 
             this.groupBox4.Controls.Add(this.txtNuevoCargoFusion);
@@ -377,6 +380,57 @@
             this.groupBox4.TabIndex = 6;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Fusion de departamentos";
+            // 
+            // txtNuevoCargoFusion
+            // 
+            this.txtNuevoCargoFusion.Location = new System.Drawing.Point(96, 86);
+            this.txtNuevoCargoFusion.Name = "txtNuevoCargoFusion";
+            this.txtNuevoCargoFusion.Size = new System.Drawing.Size(289, 20);
+            this.txtNuevoCargoFusion.TabIndex = 21;
+            // 
+            // cmbFusion2
+            // 
+            this.cmbFusion2.FormattingEnabled = true;
+            this.cmbFusion2.Location = new System.Drawing.Point(38, 51);
+            this.cmbFusion2.Name = "cmbFusion2";
+            this.cmbFusion2.Size = new System.Drawing.Size(347, 21);
+            this.cmbFusion2.TabIndex = 26;
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(7, 20);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(0, 13);
+            this.label14.TabIndex = 25;
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(14, 88);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(76, 13);
+            this.label12.TabIndex = 24;
+            this.label12.Text = "Nuevo Cargo :";
+            // 
+            // rbJefe2
+            // 
+            this.rbJefe2.AutoSize = true;
+            this.rbJefe2.Location = new System.Drawing.Point(15, 54);
+            this.rbJefe2.Name = "rbJefe2";
+            this.rbJefe2.Size = new System.Drawing.Size(14, 13);
+            this.rbJefe2.TabIndex = 23;
+            this.rbJefe2.TabStop = true;
+            this.rbJefe2.UseVisualStyleBackColor = true;
+            // 
+            // rbJefe1
+            // 
+            this.rbJefe1.Location = new System.Drawing.Point(15, 25);
+            this.rbJefe1.Name = "rbJefe1";
+            this.rbJefe1.Size = new System.Drawing.Size(22, 20);
+            this.rbJefe1.TabIndex = 0;
+            this.rbJefe1.TabStop = true;
+            this.rbJefe1.UseVisualStyleBackColor = true;
             // 
             // btnFusionar
             // 
@@ -396,57 +450,6 @@
             this.cmbFusion1.Size = new System.Drawing.Size(347, 21);
             this.cmbFusion1.TabIndex = 21;
             // 
-            // rbJefe1
-            // 
-            this.rbJefe1.Location = new System.Drawing.Point(15, 25);
-            this.rbJefe1.Name = "rbJefe1";
-            this.rbJefe1.Size = new System.Drawing.Size(22, 20);
-            this.rbJefe1.TabIndex = 0;
-            this.rbJefe1.TabStop = true;
-            this.rbJefe1.UseVisualStyleBackColor = true;
-            // 
-            // rbJefe2
-            // 
-            this.rbJefe2.AutoSize = true;
-            this.rbJefe2.Location = new System.Drawing.Point(15, 54);
-            this.rbJefe2.Name = "rbJefe2";
-            this.rbJefe2.Size = new System.Drawing.Size(14, 13);
-            this.rbJefe2.TabIndex = 23;
-            this.rbJefe2.TabStop = true;
-            this.rbJefe2.UseVisualStyleBackColor = true;
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(14, 88);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(76, 13);
-            this.label12.TabIndex = 24;
-            this.label12.Text = "Nuevo Cargo :";
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(7, 20);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(0, 13);
-            this.label14.TabIndex = 25;
-            // 
-            // cmbFusion2
-            // 
-            this.cmbFusion2.FormattingEnabled = true;
-            this.cmbFusion2.Location = new System.Drawing.Point(38, 51);
-            this.cmbFusion2.Name = "cmbFusion2";
-            this.cmbFusion2.Size = new System.Drawing.Size(347, 21);
-            this.cmbFusion2.TabIndex = 26;
-            // 
-            // txtNuevoCargoFusion
-            // 
-            this.txtNuevoCargoFusion.Location = new System.Drawing.Point(96, 86);
-            this.txtNuevoCargoFusion.Name = "txtNuevoCargoFusion";
-            this.txtNuevoCargoFusion.Size = new System.Drawing.Size(289, 20);
-            this.txtNuevoCargoFusion.TabIndex = 21;
-            // 
             // panelStats
             // 
             this.panelStats.Location = new System.Drawing.Point(12, 21);
@@ -465,6 +468,46 @@
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Estadisticas";
             // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(242, 86);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(32, 13);
+            this.label15.TabIndex = 8;
+            this.label15.Text = "DUI :";
+            // 
+            // txtDui
+            // 
+            this.txtDui.Location = new System.Drawing.Point(284, 80);
+            this.txtDui.Name = "txtDui";
+            this.txtDui.Size = new System.Drawing.Size(97, 20);
+            this.txtDui.TabIndex = 9;
+            // 
+            // cmbCargo
+            // 
+            this.cmbCargo.FormattingEnabled = true;
+            this.cmbCargo.Location = new System.Drawing.Point(64, 53);
+            this.cmbCargo.Name = "cmbCargo";
+            this.cmbCargo.Size = new System.Drawing.Size(161, 21);
+            this.cmbCargo.TabIndex = 10;
+            // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(284, 155);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(97, 20);
+            this.textBox1.TabIndex = 12;
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(242, 161);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(32, 13);
+            this.label16.TabIndex = 11;
+            this.label16.Text = "DUI :";
+            // 
             // Gestion_Empleados
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -475,11 +518,11 @@
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.panelArbol);
-            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.grup);
             this.Name = "Gestion_Empleados";
             this.Text = "Gestion empleados y cargos";
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
+            this.grup.ResumeLayout(false);
+            this.grup.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
@@ -494,8 +537,7 @@
         #endregion
 
         private System.Windows.Forms.TextBox txtNombre;
-        private System.Windows.Forms.TextBox txtCargo;
-        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox grup;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox cmbJefe;
@@ -534,6 +576,11 @@
         private System.Windows.Forms.Button btnFusionar;
         private System.Windows.Forms.Panel panelStats;
         private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.TextBox txtDui;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.ComboBox cmbCargo;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Label label16;
     }
 }
 
