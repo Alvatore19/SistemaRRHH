@@ -12,6 +12,8 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -34,7 +36,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -47,15 +54,45 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AN_Jerarquia.cs" />
+    <Compile Include="Asistencia.cs">
+      <DependentUpon>ModeloRRHH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Cargo.cs">
+      <DependentUpon>ModeloRRHH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Empleado.cs">
+      <DependentUpon>ModeloRRHH.tt</DependentUpon>
+    </Compile>
     <Compile Include="Gestion_Empleados.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Gestion_Empleados.Designer.cs">
       <DependentUpon>Gestion_Empleados.cs</DependentUpon>
     </Compile>
+    <Compile Include="HistorialSalarial.cs">
+      <DependentUpon>ModeloRRHH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="ModeloRRHH.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ModeloRRHH.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="ModeloRRHH.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ModeloRRHH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="ModeloRRHH.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ModeloRRHH.edmx</DependentUpon>
+    </Compile>
     <Compile Include="Nodo_Empleado.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SolicitudPermiso.cs">
+      <DependentUpon>ModeloRRHH.tt</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Gestion_Empleados.resx">
       <DependentUpon>Gestion_Empleados.cs</DependentUpon>
     </EmbeddedResource>
@@ -68,6 +105,13 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EntityDeploy Include="ModeloRRHH.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>ModeloRRHH.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <None Include="ModeloRRHH.edmx.diagram">
+      <DependentUpon>ModeloRRHH.edmx</DependentUpon>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -83,6 +127,24 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="logo.png" />
+    <Content Include="ModeloRRHH.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>ModeloRRHH.edmx</DependentUpon>
+      <LastGenOutput>ModeloRRHH.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="ModeloRRHH.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>ModeloRRHH.edmx</DependentUpon>
+      <LastGenOutput>ModeloRRHH.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="EntityFramework">
+      <Version>6.5.1</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
