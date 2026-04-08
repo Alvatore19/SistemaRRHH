@@ -118,8 +118,8 @@ namespace SistemaRRHH
             if (!System.Text.RegularExpressions.Regex.IsMatch(txtDui.Text, @"^\d{8}-\d$"))
             {
                 MessageBox.Show("El formato del DUI es incorrecto (Ejemplo: 12345678-9).", "DUI Inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtDui.Focus();
-                return;
+                txtDui.Focus(); 
+                return;        
             }
 
             // --- 3. VALIDACIÓN DE UNICIDAD (DUI y Correo/Username) ---
@@ -128,8 +128,9 @@ namespace SistemaRRHH
             if (listaTodosLosEmpleados.Any(emp => emp.Dui == txtDui.Text))
             {
                 MessageBox.Show("Este número de DUI ya se encuentra registrado.", "DUI Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                txtDui.Focus();
-                return;
+                txtDui.Focus(); 
+                txtDui.SelectAll(); 
+                return; 
             }
 
             // Validar Formato de Correo
@@ -172,6 +173,7 @@ namespace SistemaRRHH
 
             string nombreJefePasaMetodo = "N/A (Director General)";
 
+            // --- 4. INSERCIÓN EN EL ÁRBOL ---
             if (cmbJefe.SelectedIndex == -1)
             {
                 miEmpresa.Raiz = nuevoEmpleado;
