@@ -63,6 +63,12 @@
     <Compile Include="Empleado.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>
+    <Compile Include="FormDash.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormDash.Designer.cs">
+      <DependentUpon>FormDash.cs</DependentUpon>
+    </Compile>
     <Compile Include="Gestion_Empleados.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -71,6 +77,12 @@
     </Compile>
     <Compile Include="HistorialSalarial.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Login.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Login.Designer.cs">
+      <DependentUpon>Login.cs</DependentUpon>
     </Compile>
     <Compile Include="ModeloRRHH.Context.cs">
       <AutoGen>True</AutoGen>
@@ -93,8 +105,14 @@
     <Compile Include="SolicitudPermiso.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="FormDash.resx">
+      <DependentUpon>FormDash.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Gestion_Empleados.resx">
       <DependentUpon>Gestion_Empleados.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Login.resx">
+      <DependentUpon>Login.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

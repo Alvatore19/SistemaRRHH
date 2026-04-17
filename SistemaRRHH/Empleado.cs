@@ -29,6 +29,7 @@ namespace SistemaRRHH
         public string NombreCompleto { get; set; }
         public string DocumentoLegal { get; set; }
         public bool EstadoActivo { get; set; }
+        public string Contrasena { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Asistencia> Asistencia { get; set; }

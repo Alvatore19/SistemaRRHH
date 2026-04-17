@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="SistemaRRHHModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+    <Schema Namespace="SistemaRRHHModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="Asistencia">
           <Key>
             <PropertyRef Name="LlaveHash" />
@@ -36,6 +36,7 @@
           <Property Name="NombreCompleto" Type="varchar" MaxLength="150" Nullable="false" />
           <Property Name="DocumentoLegal" Type="varchar" MaxLength="15" Nullable="false" />
           <Property Name="EstadoActivo" Type="bit" Nullable="false" />
+          <Property Name="Contrasena" Type="varchar" MaxLength="100" Nullable="false" />
         </EntityType>
         <EntityType Name="HistorialSalarial">
           <Key>
@@ -153,8 +154,7 @@
             <End Role="SolicitudPermiso" EntitySet="SolicitudPermiso" />
           </AssociationSet>
         </EntityContainer>
-      </Schema>
-    </edmx:StorageModels>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="SistemaRRHHModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -197,6 +197,7 @@
           <NavigationProperty Name="Empleado2" Relationship="Self.FK_Empleado_Jefe" FromRole="Empleado1" ToRole="Empleado" />
           <NavigationProperty Name="HistorialSalarial" Relationship="Self.FK_Historial_Empleado" FromRole="Empleado" ToRole="HistorialSalarial" />
           <NavigationProperty Name="SolicitudPermiso" Relationship="Self.FK_Permiso_Empleado" FromRole="Empleado" ToRole="SolicitudPermiso" />
+          <Property Name="Contrasena" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="HistorialSalarial">
           <Key>
@@ -348,6 +349,7 @@
           <EntitySetMapping Name="Empleado">
             <EntityTypeMapping TypeName="SistemaRRHHModel.Empleado">
               <MappingFragment StoreEntitySet="Empleado">
+                <ScalarProperty Name="Contrasena" ColumnName="Contrasena" />
                 <ScalarProperty Name="IdEmpleado" ColumnName="IdEmpleado" />
                 <ScalarProperty Name="IdCargo" ColumnName="IdCargo" />
                 <ScalarProperty Name="IdJefe" ColumnName="IdJefe" />

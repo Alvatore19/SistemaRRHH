@@ -27,6 +27,7 @@ CREATE TABLE Empleado(
     NombreCompleto VARCHAR(150) NOT NULL,
     DocumentoLegal VARCHAR(15) NOT NULL, 
     EstadoActivo BIT NOT NULL DEFAULT 1,
+    Contrasena VARCHAR(100) NOT NULL,
     CONSTRAINT PK_IdEmpleado PRIMARY KEY(IdEmpleado),
     CONSTRAINT UQ_DocumentoLegal UNIQUE (DocumentoLegal), 
     CONSTRAINT FK_Empleado_Cargo FOREIGN KEY(IdCargo) REFERENCES Cargo(IdCargo) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -79,16 +80,16 @@ INSERT INTO Cargo (NombreRol, NivelJerarquico, SalarioBase) VALUES
 ('Desarrollador Backend', 3, 1200.00),
 ('Analista de RRHH', 3, 900.00);
 
-INSERT INTO Empleado (IdEmpleado, IdCargo, IdJefe, NombreCompleto, DocumentoLegal, EstadoActivo) VALUES 
-('EMP-1', 1, NULL, 'Alejandro Alvarenga', '12345678-9', 1);
+INSERT INTO Empleado (IdEmpleado, IdCargo, IdJefe, NombreCompleto, DocumentoLegal, EstadoActivo, Contrasena) VALUES 
+('EMP-1', 1, NULL, 'Alejandro Alvarenga', '12345678-9', 1, 'director123');
 
-INSERT INTO Empleado (IdEmpleado, IdCargo, IdJefe, NombreCompleto, DocumentoLegal, EstadoActivo) VALUES 
-('EMP-2', 2, 'EMP-1', 'Roberto Sanchez', '23456789-0', 1),
-('EMP-3', 3, 'EMP-1', 'Maria Fernanda Lopez', '34567890-1', 1);
+INSERT INTO Empleado (IdEmpleado, IdCargo, IdJefe, NombreCompleto, DocumentoLegal, EstadoActivo, Contrasena) VALUES 
+('EMP-2', 2, 'EMP-1', 'Roberto Sanchez', '23456789-0', 1, 'gerente123'),
+('EMP-3', 3, 'EMP-1', 'Maria Fernanda Lopez', '34567890-1', 1, 'analista123');
 
-INSERT INTO Empleado (IdEmpleado, IdCargo, IdJefe, NombreCompleto, DocumentoLegal, EstadoActivo) VALUES 
-('EMP-4', 4, 'EMP-2', 'Carlos Martinez', '45678901-2', 1),
-('EMP-5', 5, 'EMP-3', 'Lucia Gomez', '56789012-3', 1);
+INSERT INTO Empleado (IdEmpleado, IdCargo, IdJefe, NombreCompleto, DocumentoLegal, EstadoActivo, Contrasena) VALUES 
+('EMP-4', 4, 'EMP-2', 'Carlos Martinez', '45678901-2', 1, 'empleado123'),
+('EMP-5', 5, 'EMP-3', 'Lucia Gomez', '56789012-3', 1, 'empleado123');
 
 INSERT INTO HistorialSalarial (IdEmpleado, Monto, TipoModificacion, FechaAplicacion) VALUES 
 ('EMP-4', 1200.00, 'Ingreso Inicial', '2026-01-01'),
