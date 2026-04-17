@@ -11,10 +11,7 @@ namespace SistemaRRHH
             InitializeComponent();
         }
 
-        private void Login_Load(object sender, EventArgs e)
-        {
-            // Inicialización adicional si es necesaria
-        }
+        private void Login_Load(object sender, EventArgs e) { }
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
@@ -30,11 +27,11 @@ namespace SistemaRRHH
 
             try
             {
-                string rol = ValidarCredenciales(dui, password);
+                var (nivel, nombre) = ValidarCredenciales(dui, password);
 
-                if (!string.IsNullOrEmpty(rol))
+                if (!string.IsNullOrEmpty(nivel))
                 {
-                    FormDash dashboard = new FormDash(rol);
+                    FormDashboard dashboard = new FormDashboard(nivel, nombre);
                     dashboard.FormClosed += (s, args) => Application.Exit();
                     dashboard.Show();
                     this.Hide();
@@ -52,7 +49,7 @@ namespace SistemaRRHH
             }
         }
 
-        private string ValidarCredenciales(string dui, string password)
+        private (string nivel, string nombre) ValidarCredenciales(string dui, string password)
         {
             string connectionString = @"Data Source=(localdb)\ProjectModels;Initial Catalog=SistemaRRHH;Integrated Security=true";
 
@@ -63,25 +60,43 @@ namespace SistemaRRHH
                     connection.Open();
 
                     SqlCommand cmd = new SqlCommand(
-                        @"SELECT c.NombreRol 
-                          FROM Empleado e
-                          INNER JOIN Cargo c ON e.IdCargo = c.IdCargo
-                          WHERE e.DocumentoLegal = @DocumentoLegal
-                          AND e.Contrasena = @Password
-                          AND e.EstadoActivo = 1",
-                        connection);
+                        @"SELECT c.NivelJerarquico, e.NombreCompleto
+                        FROM Empleado e
+                        INNER JOIN Cargo c ON e.IdCargo = c.IdCargo
+                        WHERE e.DocumentoLegal = @DocumentoLegal
+                        AND e.Contrasena = @Password
+                        AND e.EstadoActivo = 1",
+                    connection);
 
                     cmd.Parameters.AddWithValue("@DocumentoLegal", dui);
                     cmd.Parameters.AddWithValue("@Password", password);
 
-                    object result = cmd.ExecuteScalar();
-                    return result?.ToString() ?? string.Empty;
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                            return (reader["NivelJerarquico"].ToString(),
+                                    reader["NombreCompleto"].ToString());
+                    }
+
+                    return (string.Empty, string.Empty);
                 }
             }
             catch (SqlException sqlEx)
             {
                 throw new Exception("Error de base de datos: " + sqlEx.Message);
             }
+        }
+
+        private void lblError_Click(object sender, EventArgs e) { }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtPassword_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
