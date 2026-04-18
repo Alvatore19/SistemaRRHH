@@ -4,9 +4,9 @@ using System.Windows.Forms;
 
 namespace SistemaRRHH
 {
-    public partial class Login : Form
+    public partial class FormLogin : Form
     {
-        public Login()
+        public FormLogin()
         {
             InitializeComponent();
         }
@@ -27,11 +27,13 @@ namespace SistemaRRHH
 
             try
             {
-                var (nivel, nombre) = ValidarCredenciales(dui, password);
+                // 1. Recibimos la nueva variable 'idEmpleado' desde el método
+                var (nivel, nombre, idEmpleado) = ValidarCredenciales(dui, password);
 
                 if (!string.IsNullOrEmpty(nivel))
                 {
-                    FormDashboard dashboard = new FormDashboard(nivel, nombre);
+                    // 2. Pasamos el 'idEmpleado' al constructor del Dashboard
+                    FormDashboard dashboard = new FormDashboard(nivel, nombre, idEmpleado);
                     dashboard.FormClosed += (s, args) => Application.Exit();
                     dashboard.Show();
                     this.Hide();
@@ -49,9 +51,10 @@ namespace SistemaRRHH
             }
         }
 
-        private (string nivel, string nombre) ValidarCredenciales(string dui, string password)
+        // 3. Modificamos la firma del método para que retorne 3 strings en la tupla
+        private (string nivel, string nombre, string idEmpleado) ValidarCredenciales(string dui, string password)
         {
-            string connectionString = @"Data Source=(localdb)\ProjectModels;Initial Catalog=SistemaRRHH;Integrated Security=true";
+            string connectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=SistemaRRHH;Integrated Security=True;Encrypt=False;TrustServerCertificate=True;";
 
             try
             {
@@ -59,8 +62,9 @@ namespace SistemaRRHH
                 {
                     connection.Open();
 
+                    // 4. Agregamos 'e.IdEmpleado' a la consulta SELECT
                     SqlCommand cmd = new SqlCommand(
-                        @"SELECT c.NivelJerarquico, e.NombreCompleto
+                        @"SELECT c.NivelJerarquico, e.NombreCompleto, e.IdEmpleado
                         FROM Empleado e
                         INNER JOIN Cargo c ON e.IdCargo = c.IdCargo
                         WHERE e.DocumentoLegal = @DocumentoLegal
@@ -74,11 +78,16 @@ namespace SistemaRRHH
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
+                        {
+                            // 5. Retornamos también la columna IdEmpleado
                             return (reader["NivelJerarquico"].ToString(),
-                                    reader["NombreCompleto"].ToString());
+                                    reader["NombreCompleto"].ToString(),
+                                    reader["IdEmpleado"].ToString());
+                        }
                     }
 
-                    return (string.Empty, string.Empty);
+                    // Si no encuentra resultados, retorna tres campos vacíos
+                    return (string.Empty, string.Empty, string.Empty);
                 }
             }
             catch (SqlException sqlEx)
@@ -89,14 +98,8 @@ namespace SistemaRRHH
 
         private void lblError_Click(object sender, EventArgs e) { }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
+        private void pictureBox1_Click(object sender, EventArgs e) { }
 
-        }
-
-        private void txtPassword_TextChanged(object sender, EventArgs e)
-        {
-
-        }
+        private void txtPassword_TextChanged(object sender, EventArgs e) { }
     }
 }

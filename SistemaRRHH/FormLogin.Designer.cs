@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace SistemaRRHH
 {
-    partial class Login
+    partial class FormLogin
     {
         /// <summary>
         /// Required designer variable.
@@ -38,7 +38,7 @@ namespace SistemaRRHH
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Login));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormLogin));
             this.labelDUI = new System.Windows.Forms.Label();
             this.labelPassword = new System.Windows.Forms.Label();
             this.txtDUI = new System.Windows.Forms.TextBox();

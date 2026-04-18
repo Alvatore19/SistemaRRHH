@@ -10,7 +10,7 @@ namespace SistemaRRHH
 {
     public class AN_Jerarquia
     {
-        public Nodo_Empleado Raiz { get; set; }
+        public NodoEmpleado Raiz { get; set; }
 
         public AN_Jerarquia()
         {
@@ -18,15 +18,15 @@ namespace SistemaRRHH
         }
 
         // Método recursivo para buscar un nodo por su ID
-        public Nodo_Empleado Buscar(string idBuscado, Nodo_Empleado nodoActual)
+        public NodoEmpleado Buscar(string idBuscado, NodoEmpleado nodoActual)
         {
             if (nodoActual == null) return null;
 
             if (nodoActual.Id == idBuscado) return nodoActual;
 
-            foreach (Nodo_Empleado subalterno in nodoActual.Subalternos)
+            foreach (NodoEmpleado subalterno in nodoActual.Subalternos)
             {
-                Nodo_Empleado encontrado = Buscar(idBuscado, subalterno);
+                NodoEmpleado encontrado = Buscar(idBuscado, subalterno);
                 if (encontrado != null)
                 {
                     return encontrado;
@@ -37,7 +37,7 @@ namespace SistemaRRHH
         }
 
         // Método para insertar al empleado en su lugar correcto
-        public bool Insertar(Nodo_Empleado nuevoEmpleado, string idJefe)
+        public bool Insertar(NodoEmpleado nuevoEmpleado, string idJefe)
         {
             if (Raiz == null)
             {
@@ -48,7 +48,7 @@ namespace SistemaRRHH
                 return true;
             }
 
-            Nodo_Empleado jefe = Buscar(idJefe, Raiz);
+            NodoEmpleado jefe = Buscar(idJefe, Raiz);
 
             if (jefe != null)
             {
@@ -65,7 +65,7 @@ namespace SistemaRRHH
 
         public bool EliminarConReasignacion(string idEliminar, string idNuevoJefe)
         {
-            Nodo_Empleado nodoAEliminar = Buscar(idEliminar, Raiz);
+            NodoEmpleado nodoAEliminar = Buscar(idEliminar, Raiz);
             if (nodoAEliminar == null) return false;
 
             // CASO 1: Es la Raíz
@@ -76,15 +76,15 @@ namespace SistemaRRHH
                 return true;
             }
 
-            Nodo_Empleado jefeActual = nodoAEliminar.Jefe;
+            NodoEmpleado jefeActual = nodoAEliminar.Jefe;
 
             // CASO 2: Reasignar subalternos (si los tiene)
             if (nodoAEliminar.Subalternos.Count > 0)
             {
-                Nodo_Empleado nuevoJefe = Buscar(idNuevoJefe, Raiz);
+                NodoEmpleado nuevoJefe = Buscar(idNuevoJefe, Raiz);
                 if (nuevoJefe != null)
                 {
-                    foreach (Nodo_Empleado hijo in nodoAEliminar.Subalternos)
+                    foreach (NodoEmpleado hijo in nodoAEliminar.Subalternos)
                     {
                         hijo.Jefe = nuevoJefe;
                         nuevoJefe.Subalternos.Add(hijo);
@@ -104,7 +104,7 @@ namespace SistemaRRHH
         public bool ActualizarEmpleado(string idEmpleado, string nuevoNombre, string nuevoPuesto, double nuevoSueldo, string idNuevoJefe)
         {
             // 1. Buscar al empleado que vamos a editar
-            Nodo_Empleado empAEditar = Buscar(idEmpleado, Raiz);
+            NodoEmpleado empAEditar = Buscar(idEmpleado, Raiz);
             if (empAEditar == null) return false;
 
             // 2. Actualizar sus datos básicos
@@ -119,7 +119,7 @@ namespace SistemaRRHH
                 // Solo hacemos el movimiento si realmente eligieron un jefe distinto al actual
                 if (empAEditar.Jefe.Id != idNuevoJefe)
                 {
-                    Nodo_Empleado nuevoJefe = Buscar(idNuevoJefe, Raiz);
+                    NodoEmpleado nuevoJefe = Buscar(idNuevoJefe, Raiz);
 
                     if (nuevoJefe != null)
                     {
@@ -143,8 +143,8 @@ namespace SistemaRRHH
 
         public bool FusionarDepartamentos(string idGanador, string idPerdedor, string nuevoCargoGanador)
         {
-            Nodo_Empleado ganador = Buscar(idGanador, Raiz);
-            Nodo_Empleado perdedor = Buscar(idPerdedor, Raiz);
+            NodoEmpleado ganador = Buscar(idGanador, Raiz);
+            NodoEmpleado perdedor = Buscar(idPerdedor, Raiz);
 
             // Validamos que ambos existan
             if (ganador == null || perdedor == null) return false;
@@ -155,7 +155,7 @@ namespace SistemaRRHH
             // 2. Traspasamos a todos los empleados del perdedor al equipo del ganador
             // OJO: Usamos ToList() para crear una copia temporal de la lista. 
             // Si modificamos una lista mientras la recorremos en un foreach, C# lanza error.
-            foreach (Nodo_Empleado empleadoTransferido in perdedor.Subalternos.ToList())
+            foreach (NodoEmpleado empleadoTransferido in perdedor.Subalternos.ToList())
             {
                 empleadoTransferido.Jefe = ganador;       // Le asignamos el nuevo jefe
                 ganador.Subalternos.Add(empleadoTransferido); // Lo agregamos a la lista del ganador
@@ -178,14 +178,14 @@ namespace SistemaRRHH
         }
 
         // Método recursivo para contar los empleados de un subárbol
-        public int ContarEmpleadosSubarbol(Nodo_Empleado nodoActual)
+        public int ContarEmpleadosSubarbol(NodoEmpleado nodoActual)
         {
             if (nodoActual == null) return 0;
 
             int contador = 1; // Nos contamos a nosotros mismos (al jefe)
 
             // Sumamos a todos los subalternos de forma recursiva
-            foreach (Nodo_Empleado subalterno in nodoActual.Subalternos)
+            foreach (NodoEmpleado subalterno in nodoActual.Subalternos)
             {
                 contador += ContarEmpleadosSubarbol(subalterno);
             }
@@ -193,7 +193,7 @@ namespace SistemaRRHH
             return contador;
         }
 
-        public static void EnviarConfirmacion(Nodo_Empleado empleado, string nombreJefe)
+        public static void EnviarConfirmacion(NodoEmpleado empleado, string nombreJefe)
         {
             try
             {

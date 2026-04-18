@@ -58,6 +58,10 @@
           <Property Name="NivelPrioridad" Type="int" Nullable="false" />
           <Property Name="FechaSolicitud" Type="datetime" Nullable="false" />
           <Property Name="EstadoAprobacion" Type="varchar" MaxLength="20" Nullable="false" />
+          <Property Name="CantidadTiempo" Type="int" Nullable="false" />
+          <Property Name="UnidadTiempo" Type="varchar" MaxLength="10" Nullable="false" />
+          <Property Name="MotivoDetallado" Type="varchar" MaxLength="500" Nullable="false" />
+          <Property Name="RutaComprobante" Type="varchar" MaxLength="500" />
         </EntityType>
         <Association Name="FK_Asistencia_Empleado">
           <End Role="Empleado" Type="Self.Empleado" Multiplicity="1">
@@ -221,6 +225,10 @@
           <Property Name="FechaSolicitud" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="EstadoAprobacion" Type="String" MaxLength="20" FixedLength="false" Unicode="false" Nullable="false" />
           <NavigationProperty Name="Empleado" Relationship="Self.FK_Permiso_Empleado" FromRole="SolicitudPermiso" ToRole="Empleado" />
+          <Property Name="CantidadTiempo" Type="Int32" Nullable="false" />
+          <Property Name="UnidadTiempo" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="MotivoDetallado" Type="String" Nullable="false" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="RutaComprobante" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
         </EntityType>
         <Association Name="FK_Asistencia_Empleado">
           <End Role="Empleado" Type="Self.Empleado" Multiplicity="1">
@@ -373,6 +381,10 @@
           <EntitySetMapping Name="SolicitudPermiso">
             <EntityTypeMapping TypeName="SistemaRRHHModel.SolicitudPermiso">
               <MappingFragment StoreEntitySet="SolicitudPermiso">
+                <ScalarProperty Name="RutaComprobante" ColumnName="RutaComprobante" />
+                <ScalarProperty Name="MotivoDetallado" ColumnName="MotivoDetallado" />
+                <ScalarProperty Name="UnidadTiempo" ColumnName="UnidadTiempo" />
+                <ScalarProperty Name="CantidadTiempo" ColumnName="CantidadTiempo" />
                 <ScalarProperty Name="IdSolicitud" ColumnName="IdSolicitud" />
                 <ScalarProperty Name="IdEmpleado" ColumnName="IdEmpleado" />
                 <ScalarProperty Name="TipoPermiso" ColumnName="TipoPermiso" />

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SistemaRRHH
 {
-    public class Nodo_Empleado
+    public class NodoEmpleado
     {
         public string Id { get; set; }
         public string Dui { get; set; }
@@ -19,10 +19,10 @@ namespace SistemaRRHH
 
 
         // Punteros del árbol
-        public Nodo_Empleado Jefe { get; set; }
-        public List<Nodo_Empleado> Subalternos { get; set; }
+        public NodoEmpleado Jefe { get; set; }
+        public List<NodoEmpleado> Subalternos { get; set; }
 
-        public Nodo_Empleado(string id, string dui, string nombre, string puesto, double sueldo, string username, string password)
+        public NodoEmpleado(string id, string dui, string nombre, string puesto, double sueldo, string username, string password)
         {
             Id = id;
             Dui = dui;
@@ -32,7 +32,7 @@ namespace SistemaRRHH
             Username = username;
             Password = password;
             Jefe = null;
-            Subalternos = new List<Nodo_Empleado>();
+            Subalternos = new List<NodoEmpleado>();
         }
 
         public override string ToString()

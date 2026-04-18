@@ -7,16 +7,20 @@ namespace SistemaRRHH
     {
         private string _nivel;
         private string _nombre;
+        private string _idEmpleado;
+        private Form formActivo = null;
 
         public FormDashboard()
         {
             InitializeComponent();
         }
 
-        public FormDashboard(string nivel, string nombre) : this()
+        public FormDashboard(string nivel, string nombre, string idEmpleado) : this()
         {
             _nivel = nivel;
             _nombre = nombre;
+            _idEmpleado = idEmpleado; 
+
             ConfigurarVistaPorNivelJerarquico(_nivel);
             lblUser.Text = _nombre;
             panelContenedor.AutoScroll = true;
@@ -60,22 +64,14 @@ namespace SistemaRRHH
         private void btnLogOut_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show(
-                "¿Está seguro que desea cerrar sesión?",
-                "Cerrar sesión",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question);
+            "¿Está seguro que desea cerrar sesión?",
+            "Cerrar sesión",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
-                foreach (Form f in Application.OpenForms)
-                {
-                    if (f is Login)
-                    {
-                        f.Show();
-                        break;
-                    }
-                }
-                this.Close();
+                Application.Restart();
             }
         }
 
@@ -93,16 +89,22 @@ namespace SistemaRRHH
 
         private void AbrirFormularioEnPanel(Form formHijo)
         {
-            panelContenedor.Controls.Clear();
-            panelContenedor.AutoScroll = true;
+            // 1. Si ya hay un formulario abierto, lo cerramos
+            if (formActivo != null)
+                formActivo.Close();
 
-            formHijo.TopLevel = false;
-            formHijo.FormBorderStyle = FormBorderStyle.None;
-            formHijo.Dock = DockStyle.None; 
-            formHijo.Location = new System.Drawing.Point(0, 0);
+            // 2. Guardamos el nuevo formulario como el activo
+            formActivo = formHijo;
 
+            // 3. Configuramos para que se comporte como un control dentro del panel
+            formHijo.TopLevel = false;         
+            formHijo.FormBorderStyle = FormBorderStyle.None; 
+            formHijo.Dock = DockStyle.Fill;     
+
+            // 4. Lo agregamos al panel y lo mostramos
             panelContenedor.Controls.Add(formHijo);
             panelContenedor.Tag = formHijo;
+            formHijo.BringToFront();
             formHijo.Show();
         }
 
@@ -112,7 +114,10 @@ namespace SistemaRRHH
         {
             AbrirFormularioEnPanel(new Gestion_Empleados());               // Gestión Empleados
         }
-        private void button8_Click(object sender, EventArgs e) { } // Permisos
+        private void button8_Click(object sender, EventArgs e) 
+        {
+            AbrirFormularioEnPanel(new FormPermisos(_nivel, _idEmpleado)); // Permisos 
+        }
         private void btn_Consultas_Pedidos_Click(object sender, EventArgs e) { } // Cargos
         private void btnPortal_Click(object sender, EventArgs e) { } // Portal
         private void panel1_Paint(object sender, PaintEventArgs e) { }
@@ -129,13 +134,14 @@ namespace SistemaRRHH
         private void icon_Max_Click(object sender, EventArgs e)
         {
             this.WindowState = FormWindowState.Maximized;
-            icon_Minimizar.Visible = true;
+            icon_Max.Visible = false;       
+            icon_Restaurar.Visible = true;
         }
 
         private void icon_Restaurar_Click(object sender, EventArgs e)
         {
             this.WindowState = FormWindowState.Normal;
-            icon_Restaurar.Visible = true;
+            icon_Restaurar.Visible = false; 
             icon_Max.Visible = true;
         }
     }

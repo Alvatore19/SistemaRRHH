@@ -17,7 +17,7 @@ namespace SistemaRRHH
         int contadorEmpleados = 1;
 
         // NUEVO: La "fuente de verdad" plana para los ComboBoxes
-        List<Nodo_Empleado> listaTodosLosEmpleados = new List<Nodo_Empleado>();
+        List<NodoEmpleado> listaTodosLosEmpleados = new List<NodoEmpleado>();
 
         public Gestion_Empleados()
         {
@@ -64,21 +64,21 @@ namespace SistemaRRHH
             cmbFusion2.DataSource = null;
 
             // 2. Enlazamos la lista general a los ComboBoxes que usan a TODOS los empleados
-            cmbJefe.DataSource = new List<Nodo_Empleado>(listaTodosLosEmpleados);
-            cmbEliminar.DataSource = new List<Nodo_Empleado>(listaTodosLosEmpleados);
-            cmbNuevoJefe.DataSource = new List<Nodo_Empleado>(listaTodosLosEmpleados);
-            cmbActualizarSeleccion.DataSource = new List<Nodo_Empleado>(listaTodosLosEmpleados);
-            cmbActualizarJefe.DataSource = new List<Nodo_Empleado>(listaTodosLosEmpleados);
+            cmbJefe.DataSource = new List<NodoEmpleado>(listaTodosLosEmpleados);
+            cmbEliminar.DataSource = new List<NodoEmpleado>(listaTodosLosEmpleados);
+            cmbNuevoJefe.DataSource = new List<NodoEmpleado>(listaTodosLosEmpleados);
+            cmbActualizarSeleccion.DataSource = new List<NodoEmpleado>(listaTodosLosEmpleados);
+            cmbActualizarJefe.DataSource = new List<NodoEmpleado>(listaTodosLosEmpleados);
 
             // 3. Llenamos los ComboBoxes de Fusión SOLO con Jefes de Departamento (hijos directos del Dueño/Raíz)
             if (miEmpresa.Raiz != null)
             {
-                List<Nodo_Empleado> jefesDepartamento = listaTodosLosEmpleados
+                List<NodoEmpleado> jefesDepartamento = listaTodosLosEmpleados
                     .Where(emp => emp.Jefe == miEmpresa.Raiz)
                     .ToList();
 
-                cmbFusion1.DataSource = new List<Nodo_Empleado>(jefesDepartamento);
-                cmbFusion2.DataSource = new List<Nodo_Empleado>(jefesDepartamento);
+                cmbFusion1.DataSource = new List<NodoEmpleado>(jefesDepartamento);
+                cmbFusion2.DataSource = new List<NodoEmpleado>(jefesDepartamento);
             }
 
             // 4. Reseteamos las selecciones para que arranquen en blanco
@@ -161,7 +161,7 @@ namespace SistemaRRHH
 
             // --- 5. CREACIÓN E INSERCIÓN ---
             string nuevoId = "EMP-" + contadorEmpleados.ToString();
-            Nodo_Empleado nuevoEmpleado = new Nodo_Empleado(
+            NodoEmpleado nuevoEmpleado = new NodoEmpleado(
                 nuevoId,
                 txtDui.Text,
                 txtNombre.Text,
@@ -180,7 +180,7 @@ namespace SistemaRRHH
             }
             else
             {
-                Nodo_Empleado jefeSeleccionado = (Nodo_Empleado)cmbJefe.SelectedItem;
+                NodoEmpleado jefeSeleccionado = (NodoEmpleado)cmbJefe.SelectedItem;
                 nombreJefePasaMetodo = jefeSeleccionado.Nombre;
                 miEmpresa.Insertar(nuevoEmpleado, jefeSeleccionado.Id);
             }
@@ -210,7 +210,7 @@ namespace SistemaRRHH
 
         private string ObtenerIdDelComboBox(ComboBox cmb)
         {
-            Nodo_Empleado seleccionado = (Nodo_Empleado)cmb.SelectedItem;
+            NodoEmpleado seleccionado = (NodoEmpleado)cmb.SelectedItem;
             return seleccionado.Id;
         }
 
@@ -225,7 +225,7 @@ namespace SistemaRRHH
             }
         }
 
-        private void DibujarNodo(Nodo_Empleado nodo, int x, int y, Graphics lienzo, int espacioDisponible)
+        private void DibujarNodo(NodoEmpleado nodo, int x, int y, Graphics lienzo, int espacioDisponible)
         {
             // --- Configuración de Estilo de la "Tarjeta" del Empleado ---
             int anchoTarjeta = 110; 
@@ -258,7 +258,7 @@ namespace SistemaRRHH
 
                 int yHijo = y + 100;
 
-                foreach (Nodo_Empleado subalterno in nodo.Subalternos)
+                foreach (NodoEmpleado subalterno in nodo.Subalternos)
                 {
                     int parentBottomX = x;
                     int parentBottomY = y + (altoTarjeta / 2);
@@ -279,7 +279,7 @@ namespace SistemaRRHH
         {
             if (cmbEliminar.SelectedIndex != -1)
             {
-                Nodo_Empleado nodoSeleccionado = (Nodo_Empleado)cmbEliminar.SelectedItem;
+                NodoEmpleado nodoSeleccionado = (NodoEmpleado)cmbEliminar.SelectedItem;
                 btnEliminar.Enabled = true;
 
                 if (nodoSeleccionado.Subalternos.Count > 0)
@@ -303,7 +303,7 @@ namespace SistemaRRHH
         {
             if (cmbEliminar.SelectedIndex == -1) return;
 
-            Nodo_Empleado nodoAEliminar = (Nodo_Empleado)cmbEliminar.SelectedItem;
+            NodoEmpleado nodoAEliminar = (NodoEmpleado)cmbEliminar.SelectedItem;
 
             if (nodoAEliminar == miEmpresa.Raiz && nodoAEliminar.Subalternos.Count > 0)
             {
@@ -321,7 +321,7 @@ namespace SistemaRRHH
                     return;
                 }
 
-                Nodo_Empleado nuevoJefe = (Nodo_Empleado)cmbNuevoJefe.SelectedItem;
+                NodoEmpleado nuevoJefe = (NodoEmpleado)cmbNuevoJefe.SelectedItem;
 
                 if (nuevoJefe.Id == nodoAEliminar.Id)
                 {
@@ -357,7 +357,7 @@ namespace SistemaRRHH
                 txtActualizarSueldo.Enabled = true;
                 btnActualizar.Enabled = true;
 
-                Nodo_Empleado empSeleccionado = (Nodo_Empleado)cmbActualizarSeleccion.SelectedItem;
+                NodoEmpleado empSeleccionado = (NodoEmpleado)cmbActualizarSeleccion.SelectedItem;
 
                 txtActualizarNombre.Text = empSeleccionado.Nombre;
                 txtActualizarCargo.Text = empSeleccionado.Puesto;
@@ -367,7 +367,7 @@ namespace SistemaRRHH
                 {
                     cmbActualizarJefe.Enabled = true; 
 
-                    foreach (Nodo_Empleado item in cmbActualizarJefe.Items)
+                    foreach (NodoEmpleado item in cmbActualizarJefe.Items)
                     {
                         if (item.Id == empSeleccionado.Jefe.Id)
                         {
@@ -420,12 +420,12 @@ namespace SistemaRRHH
             }
 
             // 3. Extraer el ID del empleado a editar y el ID del nuevo jefe (si aplica)
-            Nodo_Empleado empAEditar = (Nodo_Empleado)cmbActualizarSeleccion.SelectedItem;
+            NodoEmpleado empAEditar = (NodoEmpleado)cmbActualizarSeleccion.SelectedItem;
             string idNuevoJefe = "";
 
             if (cmbActualizarJefe.Enabled && cmbActualizarJefe.SelectedIndex != -1)
             {
-                Nodo_Empleado nuevoJefe = (Nodo_Empleado)cmbActualizarJefe.SelectedItem;
+                NodoEmpleado nuevoJefe = (NodoEmpleado)cmbActualizarJefe.SelectedItem;
                 idNuevoJefe = nuevoJefe.Id;
             }
 
@@ -456,8 +456,8 @@ namespace SistemaRRHH
                 return;
             }
 
-            Nodo_Empleado jefe1 = (Nodo_Empleado)cmbFusion1.SelectedItem;
-            Nodo_Empleado jefe2 = (Nodo_Empleado)cmbFusion2.SelectedItem;
+            NodoEmpleado jefe1 = (NodoEmpleado)cmbFusion1.SelectedItem;
+            NodoEmpleado jefe2 = (NodoEmpleado)cmbFusion2.SelectedItem;
 
             if (jefe1.Id == jefe2.Id)
             {
@@ -524,7 +524,7 @@ namespace SistemaRRHH
             int totalEmpleadosEnDepartamentos = 0;
 
             // Los departamentos son los hijos directos del dueño (Raíz)
-            foreach (Nodo_Empleado jefeDep in miEmpresa.Raiz.Subalternos)
+            foreach (NodoEmpleado jefeDep in miEmpresa.Raiz.Subalternos)
             {
                 nombresDepartamentos.Add(jefeDep.Nombre + " (" + jefeDep.Puesto + ")");
 
