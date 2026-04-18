@@ -23,34 +23,41 @@ namespace SistemaRRHH
 
         private void FormPermisos_Load(object sender, EventArgs e)
         {
-            // Ocultamos todos los paneles primero
+            // 1. LIMPIEZA TOTAL: Ocultamos y mandamos al fondo todo
             pnlDirector.Visible = false;
             pnlAnalista.Visible = false;
             pnlEmpleado.Visible = false;
 
+            // 2. POSICIONAMIENTO UNIFICADO
+            Point posicionGeneral = new Point(20, 80);
+            Size tamanoGeneral = new Size(1030, 500);
+
+            pnlDirector.Location = pnlAnalista.Location = pnlEmpleado.Location = posicionGeneral;
+            pnlDirector.Size = pnlAnalista.Size = pnlEmpleado.Size = tamanoGeneral;
+
             switch (_nivelUsuario)
             {
-                case "1": // Director General
+                case "1": // DIRECTOR
                     lblTitulo.Text = "Historial Global de Permisos (Director)";
                     pnlDirector.Visible = true;
-                    pnlDirector.Dock = DockStyle.Fill;
+                    pnlDirector.BringToFront(); // Obligamos a que suba al primer nivel
                     CargarHistorialDirector();
                     break;
 
-                case "2": // Analista / Gerente RRHH
-                case "3": // Si el nivel 3 en tu sistema es Analista de RRHH (Según tu Insert, Analista es Nivel 3)
-                    // NOTA: Revisa tu SQL, pusiste a Analista como Nivel 3 y a Desarrollador como Nivel 3.
-                    // Si el usuario es Analista de RRHH (EMP-3):
+                case "2": // ANALISTA (Gerentes/Analistas RRHH)
                     lblTitulo.Text = "Bandeja de Aprobación (Analista)";
                     pnlAnalista.Visible = true;
-                    pnlAnalista.Dock = DockStyle.Fill;
+                    pnlAnalista.BringToFront();
                     CargarColaAnalista();
                     break;
 
-                default: // Empleado Normal (Nivel 4 o 5, ej. EMP-4, EMP-5)
-                    lblTitulo.Text = "Mis Solicitudes de Permiso";
+                case "3": // DESARROLLADORES / EMPLEADOS
+                case "4":
+                case "5":
+                default:
+                    lblTitulo.Text = "Mis Solicitudes de Permiso (Empleado)";
                     pnlEmpleado.Visible = true;
-                    pnlEmpleado.Dock = DockStyle.Fill;
+                    pnlEmpleado.BringToFront();
                     CargarHistorialEmpleado();
                     break;
             }
@@ -65,7 +72,8 @@ namespace SistemaRRHH
             {
                 var historialCompleto = db.SolicitudPermiso
                                           .Include("Empleado")
-                                          .Select(s => new {
+                                          .Select(s => new
+                                          {
                                               s.IdSolicitud,
                                               Empleado = s.Empleado.NombreCompleto,
                                               s.TipoPermiso,
@@ -177,43 +185,78 @@ namespace SistemaRRHH
             {
                 var misPermisos = db.SolicitudPermiso
                                     .Where(s => s.IdEmpleado == _idEmpleadoActual)
-                                    .Select(s => new {
-                                        s.TipoPermiso,
+                                    .OrderByDescending(s => s.FechaSolicitud)
+                                    .Select(s => new
+                                    {
+                                        Tipo = s.TipoPermiso,
+                                        Prioridad = s.NivelPrioridad,
+                                        Fecha = s.FechaSolicitud,
                                         Tiempo = s.CantidadTiempo + " " + s.UnidadTiempo,
-                                        s.FechaSolicitud,
-                                        s.EstadoAprobacion
+                                        Motivo = s.MotivoDetallado,
+                                        Estado = s.EstadoAprobacion
                                     }).ToList();
+
                 dgvEmpleado.DataSource = misPermisos;
+
+                if (dgvEmpleado.Columns.Count > 0)
+                {
+                    dgvEmpleado.Columns["Tipo"].HeaderText = "Tipo de Permiso";
+                    dgvEmpleado.Columns["Prioridad"].HeaderText = "Nivel";
+                    dgvEmpleado.Columns["Fecha"].DefaultCellStyle.Format = "dd/MM/yyyy HH:mm";
+                }
             }
         }
 
         private void btnEnviarPermiso_Click(object sender, EventArgs e)
         {
-            if (cmbPrioridadEmp.SelectedIndex == -1) return;
+            // Validación de campos vacíos
+            if (cmbPrioridadEmp.SelectedIndex == -1)
+            {
+                MessageBox.Show("Por favor, seleccione un nivel de prioridad.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtMotivoEmp.Text) || txtMotivoEmp.Text.Length < 10)
+            {
+                MessageBox.Show("Por favor, escriba un motivo detallado (mínimo 10 caracteres).");
+                return;
+            }
 
             int prioridad = cmbPrioridadEmp.SelectedIndex + 1;
 
-            using (var db = new SistemaRRHHEntities())
+            try
             {
-                SolicitudPermiso nueva = new SolicitudPermiso
+                using (var db = new SistemaRRHHEntities())
                 {
-                    IdEmpleado = _idEmpleadoActual,
-                    TipoPermiso = "Permiso Nivel " + prioridad,
-                    NivelPrioridad = prioridad,
-                    FechaSolicitud = DateTime.Now,
-                    EstadoAprobacion = "Pendiente",
-                    CantidadTiempo = (int)numTiempoEmp.Value,
-                    UnidadTiempo = cmbUnidadEmp.Text,
-                    MotivoDetallado = txtMotivoEmp.Text,
-                    RutaComprobante = null
-                };
+                    SolicitudPermiso nueva = new SolicitudPermiso
+                    {
+                        IdEmpleado = _idEmpleadoActual,
+                        TipoPermiso = "Permiso Nivel " + prioridad,
+                        NivelPrioridad = prioridad,
+                        FechaSolicitud = DateTime.Now,
+                        EstadoAprobacion = "Pendiente",
+                        CantidadTiempo = (int)numTiempoEmp.Value,
+                        UnidadTiempo = cmbUnidadEmp.Text,
+                        MotivoDetallado = txtMotivoEmp.Text,
+                        RutaComprobante = null
+                    };
 
-                db.SolicitudPermiso.Add(nueva);
-                db.SaveChanges();
+                    db.SolicitudPermiso.Add(nueva);
+                    db.SaveChanges();
+                }
+
+                MessageBox.Show("Solicitud enviada a RRHH con éxito.", "Enviado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // Limpiar campos tras enviar
+                txtMotivoEmp.Clear();
+                numTiempoEmp.Value = 1;
+
+                CargarHistorialEmpleado();
             }
-
-            MessageBox.Show("Solicitud enviada a RRHH.");
-            CargarHistorialEmpleado();
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al enviar la solicitud: " + ex.Message);
+            }
         }
     }
 }

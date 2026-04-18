@@ -82,32 +82,72 @@
             this.pnlEmpleado.Controls.Add(this.txtMotivoEmp);
             this.pnlEmpleado.Controls.Add(this.btnEnviarPermiso);
             this.pnlEmpleado.Controls.Add(this.dgvEmpleado);
-            this.pnlEmpleado.Location = new System.Drawing.Point(20, 80);
-            this.pnlEmpleado.Name = "pnlEmpleado";
-            this.pnlEmpleado.Size = new System.Drawing.Size(1000, 500);
 
+            // Etiquetas descriptivas (Especificaciones)
+            System.Windows.Forms.Label lblEtiqPrioridad = new System.Windows.Forms.Label();
+            lblEtiqPrioridad.Text = "Nivel de Prioridad:";
+            lblEtiqPrioridad.Location = new System.Drawing.Point(20, 5);
+            lblEtiqPrioridad.AutoSize = true;
+            lblEtiqPrioridad.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+
+            System.Windows.Forms.Label lblEtiqTiempo = new System.Windows.Forms.Label();
+            lblEtiqTiempo.Text = "Duración estimada:";
+            lblEtiqTiempo.Location = new System.Drawing.Point(240, 5);
+            lblEtiqTiempo.AutoSize = true;
+            lblEtiqTiempo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+
+            System.Windows.Forms.Label lblEtiqMotivo = new System.Windows.Forms.Label();
+            lblEtiqMotivo.Text = "Razón detallada del permiso:";
+            lblEtiqMotivo.Location = new System.Drawing.Point(20, 55);
+            lblEtiqMotivo.AutoSize = true;
+            lblEtiqMotivo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+
+            this.pnlEmpleado.Controls.Add(lblEtiqPrioridad);
+            this.pnlEmpleado.Controls.Add(lblEtiqTiempo);
+            this.pnlEmpleado.Controls.Add(lblEtiqMotivo);
+
+            // Combobox de Prioridad
+            this.cmbPrioridadEmp.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbPrioridadEmp.Items.Clear();
             this.cmbPrioridadEmp.Items.AddRange(new object[] { "1 - Urgente", "2 - Serio", "3 - Mandados" });
-            this.cmbPrioridadEmp.Location = new System.Drawing.Point(20, 20);
+            this.cmbPrioridadEmp.Location = new System.Drawing.Point(20, 25);
             this.cmbPrioridadEmp.Size = new System.Drawing.Size(200, 24);
 
-            this.numTiempoEmp.Location = new System.Drawing.Point(240, 20);
+            // Numeric de Tiempo
+            this.numTiempoEmp.Location = new System.Drawing.Point(240, 25);
+            this.numTiempoEmp.Size = new System.Drawing.Size(60, 24);
+            this.numTiempoEmp.Minimum = 1;
 
+            // Combobox de Unidad (Horas/Días)
+            this.cmbUnidadEmp.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbUnidadEmp.Items.Clear();
             this.cmbUnidadEmp.Items.AddRange(new object[] { "Horas", "Dias" });
-            this.cmbUnidadEmp.Location = new System.Drawing.Point(380, 20);
+            this.cmbUnidadEmp.Location = new System.Drawing.Point(310, 25);
+            this.cmbUnidadEmp.Size = new System.Drawing.Size(100, 24);
             this.cmbUnidadEmp.SelectedIndex = 0;
 
-            this.txtMotivoEmp.Location = new System.Drawing.Point(20, 60);
+            // TextBox de Motivo
+            this.txtMotivoEmp.Location = new System.Drawing.Point(20, 75);
             this.txtMotivoEmp.Multiline = true;
-            this.txtMotivoEmp.Size = new System.Drawing.Size(480, 60);
+            this.txtMotivoEmp.Size = new System.Drawing.Size(480, 50);
+            this.txtMotivoEmp.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
 
-            this.btnEnviarPermiso.Location = new System.Drawing.Point(520, 60);
-            this.btnEnviarPermiso.Size = new System.Drawing.Size(120, 60);
-            this.btnEnviarPermiso.Text = "Enviar Solicitud";
+            // Botón Enviar (Color HotTrack)
+            this.btnEnviarPermiso.Location = new System.Drawing.Point(520, 65);
+            this.btnEnviarPermiso.Size = new System.Drawing.Size(150, 60);
+            this.btnEnviarPermiso.Text = "🚀 Enviar Solicitud";
+            this.btnEnviarPermiso.BackColor = System.Drawing.SystemColors.HotTrack; // Color solicitado
+            this.btnEnviarPermiso.ForeColor = System.Drawing.Color.White;
+            this.btnEnviarPermiso.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnEnviarPermiso.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnEnviarPermiso.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnEnviarPermiso.Click += new System.EventHandler(this.btnEnviarPermiso_Click);
 
+            // DataGridView Historial
             this.dgvEmpleado.Location = new System.Drawing.Point(20, 140);
             this.dgvEmpleado.Size = new System.Drawing.Size(960, 340);
-            this.dgvEmpleado.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvEmpleado.BackgroundColor = System.Drawing.Color.WhiteSmoke;
+            this.dgvEmpleado.BorderStyle = System.Windows.Forms.BorderStyle.None;
 
             // =========================
             // FORMULARIO PRINCIPAL
