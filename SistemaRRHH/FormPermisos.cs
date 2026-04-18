@@ -28,7 +28,6 @@ namespace SistemaRRHH
             pnlAnalista.Visible = false;
             pnlEmpleado.Visible = false;
 
-            // Mostramos el panel correspondiente y cargamos sus datos
             switch (_nivelUsuario)
             {
                 case "1": // Director General
