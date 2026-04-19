@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -22,6 +23,11 @@ namespace SistemaRRHH
         public Gestion_Empleados()
         {
             InitializeComponent();
+            CargarCargosDesdeBD();
+            CargarDesdeBD();
+            ActualizarComboBoxes();
+            panelArbol.Invalidate();
+            panelStats.Invalidate();
 
             panelArbol.Paint += panelArbol_Paint;
             panelStats.Paint += panelStats_Paint;
@@ -32,15 +38,10 @@ namespace SistemaRRHH
             txtActualizarNombre.Enabled = false;
             txtActualizarCargo.Enabled = false;
             txtActualizarSueldo.Enabled = false;
+            txtActualizarDui.Enabled = false;
             cmbActualizarJefe.Enabled = false;
             btnActualizar.Enabled = false;
 
-            // --- CARGAR CARGOS PREDETERMINADOS ---
-            cmbCargo.Items.Add("Director General");
-            cmbCargo.Items.Add("Gerente de Departamento");
-            cmbCargo.Items.Add("Supervisor");
-            cmbCargo.Items.Add("Empleado");
-            cmbCargo.Items.Add("Analista de Recursos Humanos");
 
             txtDui.MaxLength = 10;
             txtDui.KeyPress += txtDui_KeyPress;
@@ -50,6 +51,103 @@ namespace SistemaRRHH
             cmbActualizarSeleccion.AutoCompleteSource = AutoCompleteSource.ListItems;
             cmbEliminar.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             cmbEliminar.AutoCompleteSource = AutoCompleteSource.ListItems;
+        }
+
+        public void CargarDesdeBD()
+        {
+            listaTodosLosEmpleados.Clear();
+            miEmpresa = new AN_Jerarquia();
+            BDD bd = new BDD();
+
+            Dictionary<string, NodoEmpleado> diccionario = new Dictionary<string, NodoEmpleado>();
+            Dictionary<string, string> relacionesJefes = new Dictionary<string, string>();
+
+            using (MySqlConnection conn = bd.ObtenerConexion())
+            {
+                conn.Open();
+
+                // MODIFICADO: Ahora busca explícitamente donde TipoModificacion sea 'Ingreso Inicial'
+                string query = @"
+            SELECT e.IdEmpleado, e.NombreCompleto, e.IdJefe, c.NombreRol, 
+                   e.DocumentoLegal, e.Correo, e.Contrasena,
+                   IFNULL((SELECT Monto FROM HistorialSalarial hs WHERE hs.IdEmpleado = e.IdEmpleado AND hs.TipoModificacion = 'Ingreso Inicial' LIMIT 1), 0) AS SueldoActual
+            FROM Empleado e
+            JOIN Cargo c ON e.IdCargo = c.IdCargo
+            WHERE e.EstadoActivo = TRUE";
+
+                MySqlCommand cmd = new MySqlCommand(query, conn);
+                MySqlDataReader dr = cmd.ExecuteReader();
+
+                while (dr.Read())
+                {
+                    string idEmp = dr["IdEmpleado"].ToString();
+                    string idJefe = dr["IdJefe"] == DBNull.Value ? null : dr["IdJefe"].ToString();
+
+                    // Extraemos el sueldo de la consulta
+                    double sueldo = Convert.ToDouble(dr["SueldoActual"]);
+
+                    // Ahora sí llenamos el nodo con el sueldo real de la BD
+                    NodoEmpleado emp = new NodoEmpleado(
+                        idEmp,
+                        dr["DocumentoLegal"].ToString(),
+                        dr["NombreCompleto"].ToString(),
+                        dr["NombreRol"].ToString(),
+                        sueldo,
+                        dr["Correo"].ToString(),
+                        dr["Contrasena"].ToString()
+                    );
+
+                    diccionario.Add(emp.Id, emp);
+                    listaTodosLosEmpleados.Add(emp);
+                    relacionesJefes.Add(emp.Id, idJefe);
+                }
+                dr.Close();
+            }
+
+            // Armar el árbol en memoria RAM
+            foreach (var empleado in listaTodosLosEmpleados)
+            {
+                string idJefe = relacionesJefes[empleado.Id];
+
+                if (string.IsNullOrEmpty(idJefe))
+                {
+                    miEmpresa.Raiz = empleado;
+                }
+                else
+                {
+                    if (diccionario.ContainsKey(idJefe))
+                    {
+                        NodoEmpleado jefe = diccionario[idJefe];
+                        empleado.Jefe = jefe;
+                        jefe.Subalternos.Add(empleado);
+                    }
+                }
+            }
+        }
+
+
+        private void CargarCargosDesdeBD()
+        {
+            BDD bd = new BDD();
+            using (MySqlConnection conn = bd.ObtenerConexion())
+            {
+                conn.Open();
+
+                // Traemos el ID y el Nombre. Los ordenamos por jerarquía para que se vea ordenado en la lista
+                string query = "SELECT IdCargo, NombreRol FROM Cargo ORDER BY NivelJerarquico ASC";
+
+                MySqlDataAdapter adaptador = new MySqlDataAdapter(query, conn);
+                DataTable dtCargos = new DataTable();
+                adaptador.Fill(dtCargos);
+
+                // Enlazamos el DataTable al ComboBox
+                cmbCargo.DataSource = dtCargos;
+                cmbCargo.DisplayMember = "NombreRol"; // Lo que el usuario lee (Ej: "Gerente")
+                cmbCargo.ValueMember = "IdCargo";     // El dato oculto que usaremos para el INSERT (Ej: 2)
+
+                // Lo dejamos en blanco por defecto para obligar al usuario a elegir uno
+                cmbCargo.SelectedIndex = -1;
+            }
         }
 
         private void ActualizarComboBoxes()
@@ -91,10 +189,39 @@ namespace SistemaRRHH
             if (cmbFusion2.Items.Count > 0) cmbFusion2.SelectedIndex = -1;
         }
 
+        private string GenerarSiguienteId()
+        {
+            string nuevoId = "EMP-1"; // Valor por defecto si no hay nadie
+            BDD bd = new BDD();
+
+            using (MySqlConnection conn = bd.ObtenerConexion())
+            {
+                try
+                {
+                    conn.Open();
+                    // Tu idea: Contamos TODOS los empleados que existen en la tabla
+                    string query = "SELECT COUNT(*) FROM Empleado";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    // ExecuteScalar nos trae ese número exacto
+                    int cantidadTotal = Convert.ToInt32(cmd.ExecuteScalar());
+
+                    // Le sumamos 1 y armamos el texto
+                    nuevoId = "EMP-" + (cantidadTotal + 1).ToString();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error al generar ID: " + ex.Message);
+                }
+            }
+
+            return nuevoId;
+        }
 
         private void btnIngresarEmpleado_Click(object sender, EventArgs e)
         {
-            // --- 1. VALIDACIONES DE CAMPOS OBLIGATORIOS ---
+            // --- 1. VALIDACIONES DE CAMPOS OBLIGATORIOS (Sueldo reincorporado) ---
             if (string.IsNullOrWhiteSpace(txtNombre.Text) ||
                 cmbCargo.SelectedIndex == -1 ||
                 string.IsNullOrWhiteSpace(txtSueldo.Text) ||
@@ -118,38 +245,28 @@ namespace SistemaRRHH
             if (!System.Text.RegularExpressions.Regex.IsMatch(txtDui.Text, @"^\d{8}-\d$"))
             {
                 MessageBox.Show("El formato del DUI es incorrecto (Ejemplo: 12345678-9).", "DUI Inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtDui.Focus(); 
-                return;        
+                txtDui.Focus();
+                return;
             }
 
-            // --- 3. VALIDACIÓN DE UNICIDAD (DUI y Correo/Username) ---
-
-            // Validar DUI único
+            // --- 3. VALIDACIÓN DE UNICIDAD EN MEMORIA (DUI y Correo/Username) ---
             if (listaTodosLosEmpleados.Any(emp => emp.Dui == txtDui.Text))
             {
                 MessageBox.Show("Este número de DUI ya se encuentra registrado.", "DUI Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                txtDui.Focus(); 
-                txtDui.SelectAll(); 
-                return; 
+                txtDui.Focus(); txtDui.SelectAll();
+                return;
             }
 
-            // Validar Formato de Correo
             if (!txtUsername.Text.Contains("@") || !txtUsername.Text.Contains("."))
             {
                 MessageBox.Show("El nombre de usuario debe ser un correo electrónico válido.", "Correo Inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtUsername.Focus();
-                return;
+                txtUsername.Focus(); return;
             }
 
-            // Validar Correo único (Username)
-            bool correoYaExiste = listaTodosLosEmpleados.Any(emp =>
-                emp.Username.Equals(txtUsername.Text.Trim(), StringComparison.OrdinalIgnoreCase));
-
-            if (correoYaExiste)
+            if (listaTodosLosEmpleados.Any(emp => emp.Username.Equals(txtUsername.Text.Trim(), StringComparison.OrdinalIgnoreCase)))
             {
                 MessageBox.Show("Este correo electrónico ya está asignado a otro empleado.", "Correo Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                txtUsername.Focus();
-                return;
+                txtUsername.Focus(); return;
             }
 
             // --- 4. VALIDACIÓN DE JEFE OBLIGATORIO ---
@@ -159,54 +276,97 @@ namespace SistemaRRHH
                 return;
             }
 
-            // --- 5. CREACIÓN E INSERCIÓN ---
-            string nuevoId = "EMP-" + contadorEmpleados.ToString();
-            NodoEmpleado nuevoEmpleado = new NodoEmpleado(
-                nuevoId,
-                txtDui.Text,
-                txtNombre.Text,
-                cmbCargo.SelectedItem.ToString(),
-                sueldo,
-                txtUsername.Text.Trim(),
-                txtPassword.Text
-            );
+            // --- 5. PREPARACIÓN DE DATOS PARA LA BD ---
+            string nuevoId = GenerarSiguienteId();
 
+            int idCargo = Convert.ToInt32(cmbCargo.SelectedValue);
+            string idJefe = null;
             string nombreJefePasaMetodo = "N/A (Director General)";
 
-            // --- 4. INSERCIÓN EN EL ÁRBOL ---
-            if (cmbJefe.SelectedIndex == -1)
-            {
-                miEmpresa.Raiz = nuevoEmpleado;
-            }
-            else
+            if (cmbJefe.SelectedIndex != -1)
             {
                 NodoEmpleado jefeSeleccionado = (NodoEmpleado)cmbJefe.SelectedItem;
+                idJefe = jefeSeleccionado.Id;
                 nombreJefePasaMetodo = jefeSeleccionado.Nombre;
-                miEmpresa.Insertar(nuevoEmpleado, jefeSeleccionado.Id);
             }
 
-            // --- 6. NOTIFICACIÓN POR CORREO ---
-            // Llamamos al método que configuramos anteriormente
-            AN_Jerarquia.EnviarConfirmacion(nuevoEmpleado, nombreJefePasaMetodo);
+            // --- 6. INSERCIÓN EN MYSQL (EMPLEADO + HISTORIAL SALARIAL) ---
+            bool exitoBD = false;
+            BDD bd = new BDD();
 
-            // --- 7. ACTUALIZACIÓN DE INTERFAZ ---
-            contadorEmpleados++;
-            listaTodosLosEmpleados.Add(nuevoEmpleado);
-            ActualizarComboBoxes();
+            using (MySqlConnection conn = bd.ObtenerConexion())
+            {
+                try
+                {
+                    conn.Open();
 
-            MessageBox.Show($"Empleado registrado y correo enviado a {nuevoEmpleado.Username}", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    // 6.1 Insertar el empleado en la tabla principal
+                    string queryEmpleado = @"
+                INSERT INTO Empleado (IdEmpleado, IdCargo, IdJefe, NombreCompleto, DocumentoLegal, Correo, Contrasena, EstadoActivo) 
+                VALUES (@IdEmp, @IdCargo, @IdJefe, @Nombre, @Dui, @Correo, @Pass, TRUE)";
 
-            // Limpiar campos
-            txtNombre.Clear();
-            txtSueldo.Clear();
-            txtDui.Clear();
-            txtUsername.Clear();
-            txtPassword.Clear();
-            txtNombre.Focus();
+                    MySqlCommand cmdEmp = new MySqlCommand(queryEmpleado, conn);
+                    cmdEmp.Parameters.AddWithValue("@IdEmp", nuevoId);
+                    cmdEmp.Parameters.AddWithValue("@IdCargo", idCargo);
+                    cmdEmp.Parameters.AddWithValue("@IdJefe", (object)idJefe ?? DBNull.Value);
+                    cmdEmp.Parameters.AddWithValue("@Nombre", txtNombre.Text);
+                    cmdEmp.Parameters.AddWithValue("@Dui", txtDui.Text);
+                    cmdEmp.Parameters.AddWithValue("@Correo", txtUsername.Text.Trim());
+                    cmdEmp.Parameters.AddWithValue("@Pass", txtPassword.Text);
 
-            panelArbol.Invalidate();
-            panelStats.Invalidate();
+                    int filasAfectadas = cmdEmp.ExecuteNonQuery();
+
+                    // 6.2 Si el empleado se guardó bien, insertamos su Historial Salarial
+                    if (filasAfectadas > 0)
+                    {
+                        // No mandamos la FechaAplicacion para que MySQL use el DEFAULT CURRENT_TIMESTAMP
+                        string querySueldo = @"
+                    INSERT INTO HistorialSalarial (IdEmpleado, Monto, TipoModificacion) 
+                    VALUES (@IdEmpSueldo, @Monto, 'Ingreso Inicial')";
+
+                        MySqlCommand cmdSueldo = new MySqlCommand(querySueldo, conn);
+                        cmdSueldo.Parameters.AddWithValue("@IdEmpSueldo", nuevoId);
+                        cmdSueldo.Parameters.AddWithValue("@Monto", sueldo);
+
+                        cmdSueldo.ExecuteNonQuery();
+
+                        exitoBD = true; // Solo si ambos insert funcionan marcamos el éxito
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error al guardar en la base de datos:\n" + ex.Message, "Error MySQL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+            }
+
+            // --- 7. ACTUALIZACIÓN DEL PROGRAMA ---
+            if (exitoBD)
+            {
+                // El sueldo ya se pasa correctamente al nodo temporal
+                NodoEmpleado empTemporal = new NodoEmpleado(nuevoId, txtDui.Text, txtNombre.Text, cmbCargo.Text, sueldo, txtUsername.Text.Trim(), txtPassword.Text);
+                AN_Jerarquia.EnviarConfirmacion(empTemporal, nombreJefePasaMetodo);
+
+                CargarDesdeBD();
+                ActualizarComboBoxes();
+
+                MessageBox.Show($"Empleado registrado bajo el ID {nuevoId} y correo enviado a {txtUsername.Text.Trim()}", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // Limpiar campos (incluyendo el sueldo)
+                txtNombre.Clear();
+                txtSueldo.Clear();
+                txtDui.Clear();
+                txtUsername.Clear();
+                txtPassword.Clear();
+                cmbCargo.SelectedIndex = -1;
+                cmbJefe.SelectedIndex = -1;
+                txtNombre.Focus();
+
+                panelArbol.Invalidate();
+                panelStats.Invalidate();
+            }
         }
+
 
         private string ObtenerIdDelComboBox(ComboBox cmb)
         {
@@ -305,13 +465,14 @@ namespace SistemaRRHH
 
             NodoEmpleado nodoAEliminar = (NodoEmpleado)cmbEliminar.SelectedItem;
 
+            // 1. Validaciones de jerarquía (Igual que antes)
             if (nodoAEliminar == miEmpresa.Raiz && nodoAEliminar.Subalternos.Count > 0)
             {
                 MessageBox.Show("No puedes despedir al Director General si aún hay empleados.");
                 return;
             }
 
-            string idNuevoJefe = "";
+            string idNuevoJefe = null; // Usamos null para SQL si no hay reasignación
 
             if (nodoAEliminar.Subalternos.Count > 0)
             {
@@ -322,31 +483,68 @@ namespace SistemaRRHH
                 }
 
                 NodoEmpleado nuevoJefe = (NodoEmpleado)cmbNuevoJefe.SelectedItem;
-
                 if (nuevoJefe.Id == nodoAEliminar.Id)
                 {
                     MessageBox.Show("El nuevo jefe no puede ser la misma persona a despedir.");
                     return;
                 }
-
                 idNuevoJefe = nuevoJefe.Id;
             }
 
-            bool exito = miEmpresa.EliminarConReasignacion(nodoAEliminar.Id, idNuevoJefe);
-
-            if (exito)
+            // --- 2. ACTUALIZACIÓN EN BASE DE DATOS ---
+            BDD bd = new BDD();
+            using (MySqlConnection conn = bd.ObtenerConexion())
             {
-                MessageBox.Show("Empleado despedido y árbol actualizado.");
+                try
+                {
+                    conn.Open();
+                    // Iniciamos una transacción para que si algo falla, no se quede a medias
+                    MySqlTransaction trans = conn.BeginTransaction();
 
-                // Lo borramos de nuestra lista maestra
-                listaTodosLosEmpleados.RemoveAll(emp => emp.Id == nodoAEliminar.Id);
+                    try
+                    {
+                        // A. Reasignar a los subalternos en la BD
+                        if (nodoAEliminar.Subalternos.Count > 0)
+                        {
+                            string queryReasignar = "UPDATE Empleado SET IdJefe = @IdNuevoJefe WHERE IdJefe = @IdDespedido";
+                            MySqlCommand cmdReasignar = new MySqlCommand(queryReasignar, conn, trans);
+                            cmdReasignar.Parameters.AddWithValue("@IdNuevoJefe", idNuevoJefe);
+                            cmdReasignar.Parameters.AddWithValue("@IdDespedido", nodoAEliminar.Id);
+                            cmdReasignar.ExecuteNonQuery();
+                        }
 
-                // Y mandamos a recargar todos los ComboBoxes
-                ActualizarComboBoxes();
+                        // B. "Borrar" al empleado (Borrado lógico)
+                        string queryEliminar = "UPDATE Empleado SET EstadoActivo = FALSE, IdJefe = NULL WHERE IdEmpleado = @IdEmp";
+                        MySqlCommand cmdEliminar = new MySqlCommand(queryEliminar, conn, trans);
+                        cmdEliminar.Parameters.AddWithValue("@IdEmp", nodoAEliminar.Id);
+                        cmdEliminar.ExecuteNonQuery();
 
-                panelArbol.Invalidate(); panelStats.Invalidate();
+                        trans.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        trans.Rollback();
+                        throw ex; // Re-lanzar para el catch externo
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error al eliminar en la base de datos: " + ex.Message);
+                    return;
+                }
             }
+
+            // --- 3. REFRESCAR TODO EL SISTEMA ---
+            // En lugar de borrar de la lista a mano, hacemos que el sistema lea la "nueva realidad" de la BD
+            CargarDesdeBD();
+            ActualizarComboBoxes();
+
+            MessageBox.Show("Empleado eliminado correctamente y equipo reasignado.", "Éxito");
+
+            panelArbol.Invalidate();
+            panelStats.Invalidate();
         }
+
 
         private void cmbActualizarSeleccion_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -355,6 +553,11 @@ namespace SistemaRRHH
                 txtActualizarNombre.Enabled = true;
                 txtActualizarCargo.Enabled = true;
                 txtActualizarSueldo.Enabled = true;
+                txtActualizarDui.Enabled = true;
+
+                // Si quieres que el DUI también se pueda editar, actívalo aquí:
+                // txtActualizarDui.Enabled = true; 
+
                 btnActualizar.Enabled = true;
 
                 NodoEmpleado empSeleccionado = (NodoEmpleado)cmbActualizarSeleccion.SelectedItem;
@@ -363,9 +566,13 @@ namespace SistemaRRHH
                 txtActualizarCargo.Text = empSeleccionado.Puesto;
                 txtActualizarSueldo.Text = empSeleccionado.Sueldo.ToString();
 
+                // ---> ¡ESTA ES LA LÍNEA QUE TE FALTA! <---
+                // (Asegúrate de cambiar "txtActualizarDui" por el nombre real que le pusiste a ese control)
+                txtActualizarDui.Text = empSeleccionado.Dui;
+
                 if (empSeleccionado.Jefe != null)
                 {
-                    cmbActualizarJefe.Enabled = true; 
+                    cmbActualizarJefe.Enabled = true;
 
                     foreach (NodoEmpleado item in cmbActualizarJefe.Items)
                     {
@@ -384,19 +591,25 @@ namespace SistemaRRHH
             }
             else
             {
-                // 2. Si se limpia la selección, borramos textos y APAGAMOS TODO
+                // Si se limpia la selección, borramos textos y APAGAMOS TODO
                 txtActualizarNombre.Clear();
                 txtActualizarCargo.Clear();
                 txtActualizarSueldo.Clear();
+
+                // ---> AGREGA ESTO TAMBIÉN PARA QUE SE LIMPIE EL DUI <---
+                txtActualizarDui.Clear();
+
                 cmbActualizarJefe.SelectedIndex = -1;
 
                 txtActualizarNombre.Enabled = false;
                 txtActualizarCargo.Enabled = false;
                 txtActualizarSueldo.Enabled = false;
+                // txtActualizarDui.Enabled = false;
                 cmbActualizarJefe.Enabled = false;
                 btnActualizar.Enabled = false;
             }
         }
+
 
         private void btnActualizar_Click(object sender, EventArgs e)
         {
@@ -406,22 +619,23 @@ namespace SistemaRRHH
             // 2. Validar campos obligatorios
             if (string.IsNullOrWhiteSpace(txtActualizarNombre.Text) ||
                 string.IsNullOrWhiteSpace(txtActualizarCargo.Text) ||
-                string.IsNullOrWhiteSpace(txtActualizarSueldo.Text))
+                string.IsNullOrWhiteSpace(txtActualizarSueldo.Text) ||
+                string.IsNullOrWhiteSpace(txtActualizarDui.Text))
             {
-                MessageBox.Show("Por favor, completa Nombre, Cargo y Sueldo.");
+                MessageBox.Show("Por favor, completa Nombre, Cargo, Sueldo y DUI.", "Campos vacíos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             double nuevoSueldo = 0;
             if (!double.TryParse(txtActualizarSueldo.Text, out nuevoSueldo))
             {
-                MessageBox.Show("El sueldo debe ser un número válido.");
+                MessageBox.Show("El sueldo debe ser un número válido.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // 3. Extraer el ID del empleado a editar y el ID del nuevo jefe (si aplica)
+            // 3. Extraer el ID (carnet) del empleado a editar
             NodoEmpleado empAEditar = (NodoEmpleado)cmbActualizarSeleccion.SelectedItem;
-            string idNuevoJefe = "";
+            string idNuevoJefe = null;
 
             if (cmbActualizarJefe.Enabled && cmbActualizarJefe.SelectedIndex != -1)
             {
@@ -429,22 +643,72 @@ namespace SistemaRRHH
                 idNuevoJefe = nuevoJefe.Id;
             }
 
-            // 4. ¡Delegamos la responsabilidad a la clase del Árbol!
-            bool exito = miEmpresa.ActualizarEmpleado(empAEditar.Id, txtActualizarNombre.Text, txtActualizarCargo.Text, nuevoSueldo, idNuevoJefe);
+            // 4. Actualización en RAM (Árbol)
+            bool validacionJerarquia = miEmpresa.ActualizarEmpleado(empAEditar.Id, txtActualizarNombre.Text, txtActualizarCargo.Text, nuevoSueldo, idNuevoJefe);
 
-            if (exito)
+            if (!validacionJerarquia)
             {
-                MessageBox.Show("Datos actualizados correctamente.");
-
-                ActualizarComboBoxes();
-
-                panelArbol.Invalidate(); panelStats.Invalidate();
+                MessageBox.Show("Error al actualizar. Verifica que el nuevo jefe sea válido.", "Error de Jerarquía", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
-            else
+
+            // --- 5. ACTUALIZAR EN LA BASE DE DATOS ---
+            BDD bd = new BDD();
+            using (MySqlConnection conn = bd.ObtenerConexion())
             {
-                MessageBox.Show("Error al actualizar. Verifica que el nuevo jefe sea válido (no puede ser él mismo ni alguien de su propio departamento).",
-                    "Error de Jerarquía", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                try
+                {
+                    conn.Open();
+
+                    // 5.1 Actualizar datos en tabla Empleado
+                    string queryUpdate = @"
+                UPDATE Empleado 
+                SET NombreCompleto = @Nombre, 
+                    DocumentoLegal = @Dui, 
+                    IdJefe = @IdJefe 
+                WHERE IdEmpleado = @IdEmp";
+
+                    MySqlCommand cmdUpdate = new MySqlCommand(queryUpdate, conn);
+                    cmdUpdate.Parameters.AddWithValue("@Nombre", txtActualizarNombre.Text);
+                    cmdUpdate.Parameters.AddWithValue("@Dui", txtActualizarDui.Text);
+                    cmdUpdate.Parameters.AddWithValue("@IdJefe", (object)idNuevoJefe ?? DBNull.Value);
+                    cmdUpdate.Parameters.AddWithValue("@IdEmp", empAEditar.Id);
+                    cmdUpdate.ExecuteNonQuery();
+
+                    // 5.2 ACTUALIZAR SUELDO (Aquí estaba el error: quitamos el IF para que siempre actualice el carnet coincidente)
+                    string querySueldo = @"
+                UPDATE HistorialSalarial 
+                SET Monto = @NuevoSueldo 
+                WHERE IdEmpleado = @IdEmpSueldo 
+                AND TipoModificacion = 'Ingreso Inicial'";
+
+                    MySqlCommand cmdSueldo = new MySqlCommand(querySueldo, conn);
+                    cmdSueldo.Parameters.AddWithValue("@IdEmpSueldo", empAEditar.Id);
+                    cmdSueldo.Parameters.AddWithValue("@NuevoSueldo", nuevoSueldo);
+
+                    int filasSueldo = cmdSueldo.ExecuteNonQuery();
+
+                    if (filasSueldo == 0)
+                    {
+                        // Opcional: Si no existía 'Ingreso Inicial', podrías hacer un INSERT aquí, 
+                        // pero bajo tu lógica actual, esto asegura que el carnet coincida.
+                    }
+
+                    MessageBox.Show("Datos y Sueldo actualizados correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error SQL:\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
             }
+
+            // --- 6. REFRESCAR SISTEMA ---
+            CargarDesdeBD();
+            ActualizarComboBoxes();
+            cmbActualizarSeleccion.SelectedIndex = -1;
+            panelArbol.Invalidate();
+            panelStats.Invalidate();
         }
 
         private void btnFusionar_Click(object sender, EventArgs e)

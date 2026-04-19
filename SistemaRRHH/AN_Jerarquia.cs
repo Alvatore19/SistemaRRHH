@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Net;
 using System.Net.Mail;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SistemaRRHH
 {
@@ -198,8 +199,8 @@ namespace SistemaRRHH
             try
             {
                 // 1. Configuración de la cuenta emisora (Sistema)
-                var senderEmail = "sistemarh10@gmail.com";
-                var appPassword = "myzupkxuajtvuhom"; // La que ya te funcionó
+                var senderEmail = "sistema.rrhhh1@gmail.com";
+                var appPassword = "aznharisqwgyjxfm"; 
 
                 // 2. Configuración del mensaje
                 var mensaje = new MailMessage
