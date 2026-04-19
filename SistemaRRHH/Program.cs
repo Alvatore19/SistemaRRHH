@@ -16,7 +16,7 @@ namespace SistemaRRHH
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Gestion_Empleados());
+            Application.Run(new FormLogin());
         }
     }
 }
