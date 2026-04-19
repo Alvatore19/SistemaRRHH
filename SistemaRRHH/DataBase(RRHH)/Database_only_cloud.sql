@@ -1,7 +1,4 @@
--- correo: sistema.rrhhh1@gmail.com
--- contra correo : sistemaRRHH999&
--- app contra correo : aznharisqwgyjxfm
--- sitio base de datos : https://panel.filess.io/login
+
 
 SET FOREIGN_KEY_CHECKS = 0;
 
