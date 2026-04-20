@@ -30,9 +30,7 @@ namespace SistemaRRHH
             CargarTodo();
         }
 
-        // =========================
-        // CARGAR TODO
-        // =========================
+      
         private void CargarTodo()
         {
             using (var db = new SistemaRRHHEntities())
@@ -61,9 +59,7 @@ namespace SistemaRRHH
             }
         }
 
-        // =========================
-        // BOTÓN BUSCAR
-        // =========================
+       
         private void btnBuscar_Click(object sender, EventArgs e)
         {
             using (var db = new SistemaRRHHEntities())
@@ -100,7 +96,6 @@ namespace SistemaRRHH
                 dgvAsistencia.DataSource = null;
                 dgvAsistencia.DataSource = result;
 
-                // 🔥 MENSAJE SI NO HAY RESULTADOS
                 if (result.Count == 0)
                 {
                     MessageBox.Show("No se encontraron registros con esos filtros.",
@@ -111,9 +106,7 @@ namespace SistemaRRHH
             }
         }
 
-        // =========================
         // COLORES
-        // =========================
         private void dgvAsistencia_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
             foreach (DataGridViewRow row in dgvAsistencia.Rows)

@@ -28,9 +28,7 @@ namespace SistemaRRHH
             IniciarTimer();
         }
 
-        // =========================
-        // TIMER
-        // =========================
+        /
         private void IniciarTimer()
         {
             timer = new Timer();
@@ -47,9 +45,7 @@ namespace SistemaRRHH
             }
         }
 
-        // =========================
-        // DATOS EMPLEADO
-        // =========================
+        // Empleado 
         private void CargarDatosEmpleado()
         {
             using (var db = new SistemaRRHHEntities())
@@ -70,9 +66,9 @@ namespace SistemaRRHH
             }
         }
 
-        // =========================
+        
         // HISTORIAL
-        // =========================
+     
         private void CargarHistorial()
         {
             using (var db = new SistemaRRHHEntities())
@@ -94,9 +90,7 @@ namespace SistemaRRHH
             }
         }
 
-        // =========================
-        // BOTÓN PRINCIPAL
-        // =========================
+        // principal
         private void btnAccionAsistencia_Click(object sender, EventArgs e)
         {
             if (!trabajando)
@@ -105,9 +99,6 @@ namespace SistemaRRHH
                 FinalizarAsistencia();
         }
 
-        // =========================
-        // INICIAR
-        // =========================
         private void IniciarAsistencia()
         {
             using (var db = new SistemaRRHHEntities())
@@ -146,9 +137,7 @@ namespace SistemaRRHH
             timer.Start();
         }
 
-        // =========================
-        // FINALIZAR CON ESTADOS
-        // =========================
+   
         private void FinalizarAsistencia()
         {
             DialogResult r = MessageBox.Show(
@@ -177,9 +166,7 @@ namespace SistemaRRHH
 
                 decimal horas = (decimal)t.TotalHours;
 
-                // =========================
-                // ESTADOS CORRECTOS
-                // =========================
+                // estado
                 string estado;
 
                 if (horas >= 8)
@@ -189,9 +176,7 @@ namespace SistemaRRHH
                 else
                     estado = "Incompleto";
 
-                // =========================
-                // HORAS EXTRA
-                // =========================
+                // Hextra
                 decimal horasExtra = horas > 8 ? horas - 8 : 0;
                 decimal pagoExtra = horasExtra * 20;
 
