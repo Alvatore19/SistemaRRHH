@@ -32,7 +32,6 @@ namespace SistemaRRHH
         {
             using (var db = new SistemaRRHHEntities())
             {
-                // Obtenemos al empleado actual y sus relaciones (Cargo)
                 var empleado = db.Empleado
                                  .Include("Cargo")
                                  .FirstOrDefault(emp => emp.IdEmpleado == _idEmpleadoActual);
@@ -44,7 +43,6 @@ namespace SistemaRRHH
                     txtCargo.Text = empleado.Cargo != null ? empleado.Cargo.NombreRol : "Sin Asignar";
                     txtEstado.Text = empleado.EstadoActivo ? "Activo" : "Inactivo";
 
-                    // Buscar el nombre del Jefe (Como el IdJefe apunta a la misma tabla Empleado)
                     if (!string.IsNullOrEmpty(empleado.IdJefe))
                     {
                         var jefe = db.Empleado.FirstOrDefault(j => j.IdEmpleado == empleado.IdJefe);
@@ -78,7 +76,6 @@ namespace SistemaRRHH
 
         private void CargarAsistenciasSimuladas()
         {
-            // TODO: Cambiar esto por una consulta real de EF cuando creen la tabla Asistencia
             DataTable dt = new DataTable();
             dt.Columns.Add("Fecha", typeof(string));
             dt.Columns.Add("Hora Entrada", typeof(string));
@@ -93,15 +90,12 @@ namespace SistemaRRHH
 
         private void CargarBoletasSimuladas()
         {
-            // HACIENDO USO DE LA LISTA ENLAZADA CREADA POR USTEDES
             ListaBoletas miHistorialPagos = new ListaBoletas();
 
-            // TODO: Aquí deberían recorrer con un foreach los registros de su BD para insertarlos en la lista enlazada
             miHistorialPagos.Agregar("Marzo 2026", 1200.00, 150.00, 120.00);
             miHistorialPagos.Agregar("Febrero 2026", 1200.00, 0, 120.00);
             miHistorialPagos.Agregar("Enero 2026", 1200.00, 50.00, 120.00);
 
-            // Alimentamos el DataGridView extraído de la estructura de datos
             dgvBoletas.DataSource = miHistorialPagos.ObtenerListaParaGrid();
         }
     }

@@ -13,7 +13,6 @@ namespace SistemaRRHH
         private string _idEmpleadoActual;
         private ColaPrioridadPermisos miColaPermisos = new ColaPrioridadPermisos();
 
-        // Modificamos el constructor para recibir quién está logueado
         public FormPermisos(string nivel, string idEmpleado)
         {
             InitializeComponent();
@@ -40,7 +39,7 @@ namespace SistemaRRHH
                 case "1": // DIRECTOR
                     lblTitulo.Text = "Historial Global de Permisos (Director)";
                     pnlDirector.Visible = true;
-                    pnlDirector.BringToFront(); // Obligamos a que suba al primer nivel
+                    pnlDirector.BringToFront(); 
                     CargarHistorialDirector();
                     break;
 
@@ -111,18 +110,16 @@ namespace SistemaRRHH
                         MotivoDetallado = sol.MotivoDetallado,
                         RutaComprobante = sol.RutaComprobante
                     };
-                    miColaPermisos.Encolar(nodo); // Se ordenan solos
+                    miColaPermisos.Encolar(nodo); 
                 }
             }
 
-            // Cargamos la estructura ordenada al DataGridView
             dgvAnalista.DataSource = miColaPermisos.ObtenerListaParaGrid();
             ConfigurarBotonesGridAnalista();
         }
 
         private void ConfigurarBotonesGridAnalista()
         {
-            // Solo creamos los botones si no existen
             if (!dgvAnalista.Columns.Contains("btnAprobar"))
             {
                 DataGridViewButtonColumn btnAprobar = new DataGridViewButtonColumn();
@@ -147,7 +144,6 @@ namespace SistemaRRHH
         {
             if (e.RowIndex < 0) return;
 
-            // REGLA DE ORO DE LA COLA: Solo se puede procesar el índice 0 (El Frente)
             if (e.RowIndex != 0)
             {
                 MessageBox.Show("Por reglas de la Cola de Prioridad, debe atender primero la solicitud más urgente (Fila 1).",
@@ -161,7 +157,6 @@ namespace SistemaRRHH
 
             if (accion != "")
             {
-                // Desencolamos el elemento
                 NodoPermiso procesado = miColaPermisos.Desencolar();
 
                 using (var db = new SistemaRRHHEntities())
@@ -172,7 +167,7 @@ namespace SistemaRRHH
                 }
 
                 MessageBox.Show($"Solicitud de {procesado.NombreEmpleado} {accion.ToLower()}.", "Éxito");
-                CargarColaAnalista(); // Refrescamos el grid
+                CargarColaAnalista(); 
             }
         }
 
@@ -247,7 +242,6 @@ namespace SistemaRRHH
 
                 MessageBox.Show("Solicitud enviada a RRHH con éxito.", "Enviado", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                // Limpiar campos tras enviar
                 txtMotivoEmp.Clear();
                 numTiempoEmp.Value = 1;
 

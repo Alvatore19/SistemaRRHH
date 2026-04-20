@@ -12,7 +12,7 @@ namespace SistemaRRHH
         public double Salario { get; set; }
         public double Bonos { get; set; }
         public double Descuentos { get; set; }
-        public double TotalNeto { get { return (Salario + Bonos) - Descuentos; } } // Campo extra para la tabla
+        public double TotalNeto { get { return (Salario + Bonos) - Descuentos; } } 
         public Boleta Siguiente { get; set; }
 
         public Boleta(string mes, double salario, double bonos, double descuentos)

@@ -29,7 +29,6 @@ namespace SistemaRRHH
             }
         }
 
-        // ¡Este método es clave para poder pasar tu lista al DataGridView!
         public List<Boleta> ObtenerListaParaGrid()
         {
             List<Boleta> lista = new List<Boleta>();

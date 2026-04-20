@@ -86,7 +86,6 @@ namespace SistemaRRHH
                         }
                     }
 
-                    // Si no encuentra resultados, retorna tres campos vacíos
                     return (string.Empty, string.Empty, string.Empty);
                 }
             }
