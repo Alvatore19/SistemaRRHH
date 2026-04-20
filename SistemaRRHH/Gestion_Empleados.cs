@@ -12,11 +12,9 @@ namespace SistemaRRHH
 {
     public partial class Gestion_Empleados : Form
     {
-        // El árbol en memoria
         AN_Jerarquia miEmpresa = new AN_Jerarquia();
         int contadorEmpleados = 1;
 
-        // NUEVO: La "fuente de verdad" plana para los ComboBoxes
         List<NodoEmpleado> listaTodosLosEmpleados = new List<NodoEmpleado>();
 
         public Gestion_Empleados()
@@ -186,7 +184,6 @@ namespace SistemaRRHH
             }
 
             // --- 6. NOTIFICACIÓN POR CORREO ---
-            // Llamamos al método que configuramos anteriormente
             AN_Jerarquia.EnviarConfirmacion(nuevoEmpleado, nombreJefePasaMetodo);
 
             // --- 7. ACTUALIZACIÓN DE INTERFAZ ---
@@ -196,7 +193,6 @@ namespace SistemaRRHH
 
             MessageBox.Show($"Empleado registrado y correo enviado a {nuevoEmpleado.Username}", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            // Limpiar campos
             txtNombre.Clear();
             txtSueldo.Clear();
             txtDui.Clear();
@@ -243,7 +239,6 @@ namespace SistemaRRHH
             Font fuente = this.Font;
             string textoMostrar = $"{nodo.Nombre}\n{nodo.Puesto}\n";
 
-            // --- Magia de GDI+ para Centrar el Texto ---
             StringFormat formatoCentrado = new StringFormat();
             formatoCentrado.Alignment = StringAlignment.Center;     
             formatoCentrado.LineAlignment = StringAlignment.Center;
@@ -338,10 +333,8 @@ namespace SistemaRRHH
             {
                 MessageBox.Show("Empleado despedido y árbol actualizado.");
 
-                // Lo borramos de nuestra lista maestra
                 listaTodosLosEmpleados.RemoveAll(emp => emp.Id == nodoAEliminar.Id);
 
-                // Y mandamos a recargar todos los ComboBoxes
                 ActualizarComboBoxes();
 
                 panelArbol.Invalidate(); panelStats.Invalidate();
@@ -489,15 +482,12 @@ namespace SistemaRRHH
             {
                 MessageBox.Show("¡Fusión completada con éxito! La estructura se ha actualizado.", "Fusión Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                // Limpiamos la interfaz
                 txtNuevoCargoFusion.Clear();
                 rbJefe1.Checked = false;
                 rbJefe2.Checked = false;
 
-                // Recargamos todo para que los ComboBox reflejen los cambios
                 ActualizarComboBoxes();
 
-                // Redibujamos el árbol
                 panelArbol.Invalidate(); panelStats.Invalidate();
             }
             else
@@ -509,9 +499,8 @@ namespace SistemaRRHH
         private void panelStats_Paint(object sender, PaintEventArgs e)
         {
             Graphics lienzo = e.Graphics;
-            lienzo.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias; // Para que los bordes del círculo se vean suaves
+            lienzo.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias; 
 
-            // Si no hay empresa o no hay departamentos (hijos directos de la raíz), no dibujamos nada
             if (miEmpresa.Raiz == null || miEmpresa.Raiz.Subalternos.Count == 0)
             {
                 lienzo.DrawString("Aún no hay departamentos para mostrar estadísticas.", this.Font, Brushes.Gray, 10, 10);
@@ -523,12 +512,10 @@ namespace SistemaRRHH
             List<int> cantidades = new List<int>();
             int totalEmpleadosEnDepartamentos = 0;
 
-            // Los departamentos son los hijos directos del dueño (Raíz)
             foreach (NodoEmpleado jefeDep in miEmpresa.Raiz.Subalternos)
             {
                 nombresDepartamentos.Add(jefeDep.Nombre + " (" + jefeDep.Puesto + ")");
 
-                // Contamos cuánta gente hay en todo su departamento usando el nuevo método
                 int tamanoDepartamento = miEmpresa.ContarEmpleadosSubarbol(jefeDep);
                 cantidades.Add(tamanoDepartamento);
 
@@ -553,7 +540,7 @@ namespace SistemaRRHH
                 Brush brochaColor = new SolidBrush(coloresPastel[i % coloresPastel.Length]);
 
                 lienzo.FillPie(brochaColor, rectPastel, anguloInicio, anguloBarrido);
-                lienzo.DrawPie(Pens.Black, rectPastel, anguloInicio, anguloBarrido); // Borde
+                lienzo.DrawPie(Pens.Black, rectPastel, anguloInicio, anguloBarrido); 
 
                 // 4. Dibujar la leyenda (a la derecha del pastel)
                 int leyendaX = 180;
@@ -568,7 +555,6 @@ namespace SistemaRRHH
                 leyendaY += 25;
             }
 
-            // Mostrar el total general abajo de la leyenda
             lienzo.DrawString($"Total en departamentos: {totalEmpleadosEnDepartamentos}", new Font(this.Font, FontStyle.Bold), Brushes.Black, 180, leyendaY + 10);
         }
 
@@ -594,21 +580,7 @@ namespace SistemaRRHH
             }
         }
 
-
-
-        private void label6_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label10_Click(object sender, EventArgs e)
-        {
-
-        }
+        private void label6_Click(object sender, EventArgs e){}
+        private void label10_Click(object sender, EventArgs e){}
     }
 }

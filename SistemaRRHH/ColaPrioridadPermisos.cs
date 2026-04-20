@@ -15,13 +15,12 @@ namespace SistemaRRHH
             List<NodoPermiso> lista = new List<NodoPermiso>();
             NodoPermiso actual = frente;
 
-            // Recorremos la cola enlazada desde el frente hasta el final
             while (actual != null)
             {
                 lista.Add(actual);
                 actual = actual.Siguiente;
             }
-            return lista; // Usamos List<> solo para pasarlo a la pantalla, la lógica sigue siendo de Nodos.
+            return lista; 
         }
 
         public void Encolar(NodoPermiso nuevoNodo)

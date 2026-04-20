@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace SistemaRRHH
 {
-    // Cambiamos 'internal' por 'public'
     public class NodoPermiso
     {
         public int IdSolicitud { get; set; }

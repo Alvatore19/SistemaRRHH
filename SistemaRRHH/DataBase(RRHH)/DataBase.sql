@@ -1,6 +1,6 @@
--- ==============================================
+-- =============================================================
 -- Script de Base de Datos: SistemaRRHH (Para Entity Framework)
--- ==============================================
+-- =============================================================
 DROP DATABASE IF EXISTS SistemaRRHH;
 CREATE DATABASE SistemaRRHH;
 GO
@@ -8,9 +8,9 @@ GO
 USE SistemaRRHH;
 GO
 
--- ==============================================
+-- =====================================================
 -- 1. Creación de Tablas con Restricciones (Constraints)
--- ==============================================
+-- =====================================================
 
 CREATE TABLE Cargo(
     IdCargo INT IDENTITY(1,1) NOT NULL,
@@ -44,6 +44,18 @@ CREATE TABLE HistorialSalarial(
     CONSTRAINT FK_Historial_Empleado FOREIGN KEY(IdEmpleado) REFERENCES Empleado(IdEmpleado) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+CREATE TABLE BoletaPago(
+    IdBoleta INT IDENTITY(1,1) NOT NULL,
+    IdEmpleado VARCHAR(20) NOT NULL,
+    MesCorrespondiente VARCHAR(30) NOT NULL,
+    Salario DECIMAL(10,2) NOT NULL,
+    Bonos DECIMAL(10,2) NOT NULL DEFAULT 0,
+    Descuentos DECIMAL(10,2) NOT NULL DEFAULT 0,
+    FechaEmision DATE NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT PK_IdBoleta PRIMARY KEY(IdBoleta),
+    CONSTRAINT FK_Boleta_Empleado FOREIGN KEY(IdEmpleado) REFERENCES Empleado(IdEmpleado) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 CREATE TABLE Asistencia(
     LlaveHash VARCHAR(50) NOT NULL, 
     IdEmpleado VARCHAR(20) NOT NULL,
@@ -56,7 +68,6 @@ CREATE TABLE Asistencia(
     CONSTRAINT FK_Asistencia_Empleado FOREIGN KEY(IdEmpleado) REFERENCES Empleado(IdEmpleado) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- IDENTITY añadido
 CREATE TABLE SolicitudPermiso(
     IdSolicitud INT IDENTITY(1,1) NOT NULL,
     IdEmpleado VARCHAR(20) NOT NULL,

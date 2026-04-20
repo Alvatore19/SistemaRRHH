@@ -113,17 +113,16 @@ namespace SistemaRRHH
             empAEditar.Sueldo = nuevoSueldo;
 
             // 3. Lógica para cambiar de Jefe (Mover la rama)
-            // Validamos que no sea la raíz (la raíz no tiene jefe) y que nos hayan pasado un ID de jefe
             if (empAEditar.Jefe != null && !string.IsNullOrEmpty(idNuevoJefe))
             {
-                // Solo hacemos el movimiento si realmente eligieron un jefe distinto al actual
                 if (empAEditar.Jefe.Id != idNuevoJefe)
                 {
                     NodoEmpleado nuevoJefe = Buscar(idNuevoJefe, Raiz);
 
                     if (nuevoJefe != null)
                     {
-                        // --- Validaciones de Seguridad Estrictas ---
+                        // --- Validaciones ---
+
                         // A. No puede ser jefe de sí mismo
                         if (nuevoJefe.Id == empAEditar.Id) return false;
 
@@ -131,9 +130,9 @@ namespace SistemaRRHH
                         if (Buscar(nuevoJefe.Id, empAEditar) != null) return false;
 
                         // --- Hacemos el cambio en el Árbol ---
-                        empAEditar.Jefe.Subalternos.Remove(empAEditar); // Desconectar del viejo
-                        empAEditar.Jefe = nuevoJefe;                    // Asignar al nuevo
-                        nuevoJefe.Subalternos.Add(empAEditar);          // Conectar al nuevo
+                        empAEditar.Jefe.Subalternos.Remove(empAEditar); 
+                        empAEditar.Jefe = nuevoJefe;                    
+                        nuevoJefe.Subalternos.Add(empAEditar);         
                     }
                 }
             }
@@ -153,15 +152,12 @@ namespace SistemaRRHH
             ganador.Puesto = nuevoCargoGanador;
 
             // 2. Traspasamos a todos los empleados del perdedor al equipo del ganador
-            // OJO: Usamos ToList() para crear una copia temporal de la lista. 
-            // Si modificamos una lista mientras la recorremos en un foreach, C# lanza error.
             foreach (NodoEmpleado empleadoTransferido in perdedor.Subalternos.ToList())
             {
-                empleadoTransferido.Jefe = ganador;       // Le asignamos el nuevo jefe
-                ganador.Subalternos.Add(empleadoTransferido); // Lo agregamos a la lista del ganador
+                empleadoTransferido.Jefe = ganador;      
+                ganador.Subalternos.Add(empleadoTransferido); 
             }
 
-            // El perdedor se queda sin subordinados
             perdedor.Subalternos.Clear();
 
             // 3. Desconectamos al perdedor de su jefe actual (el Dueño/Raíz)
@@ -182,9 +178,8 @@ namespace SistemaRRHH
         {
             if (nodoActual == null) return 0;
 
-            int contador = 1; // Nos contamos a nosotros mismos (al jefe)
+            int contador = 1; 
 
-            // Sumamos a todos los subalternos de forma recursiva
             foreach (NodoEmpleado subalterno in nodoActual.Subalternos)
             {
                 contador += ContarEmpleadosSubarbol(subalterno);
@@ -209,7 +204,6 @@ namespace SistemaRRHH
                     IsBodyHtml = true
                 };
 
-                // El 'Username' ahora es el correo del empleado, así que lo usamos como destino
                 mensaje.To.Add(empleado.Username);
 
                 // 3. Cuerpo del mensaje con la contraseña incluida
