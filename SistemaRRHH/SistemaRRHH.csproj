@@ -57,6 +57,7 @@
     <Compile Include="Asistencia.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>
+    <Compile Include="AsistenciaHashO1.cs" />
     <Compile Include="Cargo.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>
@@ -75,6 +76,12 @@
     </Compile>
     <Compile Include="FormPermisos.Designer.cs">
       <DependentUpon>FormPermisos.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmAsistenciaDirector.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmAsistenciaDirector.Designer.cs">
+      <DependentUpon>FrmAsistenciaDirector.cs</DependentUpon>
     </Compile>
     <Compile Include="Gestion_Empleados.cs">
       <SubType>Form</SubType>
@@ -118,6 +125,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FormPermisos.resx">
       <DependentUpon>FormPermisos.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmAsistenciaDirector.resx">
+      <DependentUpon>FrmAsistenciaDirector.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Gestion_Empleados.resx">
       <DependentUpon>Gestion_Empleados.cs</DependentUpon>
