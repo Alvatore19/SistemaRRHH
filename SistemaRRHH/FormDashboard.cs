@@ -148,5 +148,12 @@ namespace SistemaRRHH
             icon_Restaurar.Visible = false; 
             icon_Max.Visible = true;
         }
+   
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            AbrirFormularioEnPanel(new FrmAsistenciaUsuario(_idEmpleado)); // Portal
+
+        }
     }
+
 }

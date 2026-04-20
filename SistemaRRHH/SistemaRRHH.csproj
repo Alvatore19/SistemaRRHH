@@ -142,6 +142,9 @@
     <EmbeddedResource Include="FormPermisos.resx">
       <DependentUpon>FormPermisos.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FrmAsistenciaUsuario.resx">
+      <DependentUpon>FrmAsistenciaUsuario.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Gestion_Empleados.resx">
       <DependentUpon>Gestion_Empleados.cs</DependentUpon>
     </EmbeddedResource>
