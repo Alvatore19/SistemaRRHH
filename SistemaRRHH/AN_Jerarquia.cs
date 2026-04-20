@@ -145,7 +145,6 @@ namespace SistemaRRHH
             NodoEmpleado ganador = Buscar(idGanador, Raiz);
             NodoEmpleado perdedor = Buscar(idPerdedor, Raiz);
 
-            // Validamos que ambos existan
             if (ganador == null || perdedor == null) return false;
 
             // 1. Actualizamos el cargo del ganador
