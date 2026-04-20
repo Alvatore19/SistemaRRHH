@@ -92,6 +92,12 @@
     <Compile Include="FrmAsistenciaDirector.Designer.cs">
       <DependentUpon>FrmAsistenciaDirector.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrmAsistenciaUsuario.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmAsistenciaUsuario.Designer.cs">
+      <DependentUpon>FrmAsistenciaUsuario.cs</DependentUpon>
+    </Compile>
     <Compile Include="Gestion_Empleados.cs">
       <SubType>Form</SubType>
     </Compile>
