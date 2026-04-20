@@ -15,15 +15,15 @@ namespace SistemaRRHH
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            string dui = txtDUI.Text.Trim();
-            string password = txtPassword.Text.Trim();
-
-            if (string.IsNullOrEmpty(dui) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrWhiteSpace(txtDUI.Text) || string.IsNullOrWhiteSpace(txtPassword.Text))
             {
                 lblError.ForeColor = System.Drawing.Color.Red;
                 lblError.Text = "Por favor ingresa DUI y contraseña.";
                 return;
             }
+
+            string dui = txtDUI.Text.Trim();
+            string password = txtPassword.Text.Trim();
 
             try
             {

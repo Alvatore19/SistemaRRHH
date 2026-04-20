@@ -17,6 +17,18 @@
           <Property Name="HorasTrabajadas" Type="decimal" Precision="5" Scale="2" />
           <Property Name="EstadoJornada" Type="varchar" MaxLength="50" Nullable="false" />
         </EntityType>
+        <EntityType Name="BoletaPago">
+          <Key>
+            <PropertyRef Name="IdBoleta" />
+          </Key>
+          <Property Name="IdBoleta" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="IdEmpleado" Type="varchar" MaxLength="20" Nullable="false" />
+          <Property Name="MesCorrespondiente" Type="varchar" MaxLength="30" Nullable="false" />
+          <Property Name="Salario" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="Bonos" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="Descuentos" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="FechaEmision" Type="date" Nullable="false" />
+        </EntityType>
         <EntityType Name="Cargo">
           <Key>
             <PropertyRef Name="IdCargo" />
@@ -77,6 +89,20 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_Boleta_Empleado">
+          <End Role="Empleado" Type="Self.Empleado" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="BoletaPago" Type="Self.BoletaPago" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Empleado">
+              <PropertyRef Name="IdEmpleado" />
+            </Principal>
+            <Dependent Role="BoletaPago">
+              <PropertyRef Name="IdEmpleado" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_Empleado_Cargo">
           <End Role="Cargo" Type="Self.Cargo" Multiplicity="1">
             <OnDelete Action="Cascade" />
@@ -133,6 +159,7 @@
         </Association>
         <EntityContainer Name="SistemaRRHHModelStoreContainer">
           <EntitySet Name="Asistencia" EntityType="Self.Asistencia" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="BoletaPago" EntityType="Self.BoletaPago" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Cargo" EntityType="Self.Cargo" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Empleado" EntityType="Self.Empleado" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="HistorialSalarial" EntityType="Self.HistorialSalarial" Schema="dbo" store:Type="Tables" />
@@ -140,6 +167,10 @@
           <AssociationSet Name="FK_Asistencia_Empleado" Association="Self.FK_Asistencia_Empleado">
             <End Role="Empleado" EntitySet="Empleado" />
             <End Role="Asistencia" EntitySet="Asistencia" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Boleta_Empleado" Association="Self.FK_Boleta_Empleado">
+            <End Role="Empleado" EntitySet="Empleado" />
+            <End Role="BoletaPago" EntitySet="BoletaPago" />
           </AssociationSet>
           <AssociationSet Name="FK_Empleado_Cargo" Association="Self.FK_Empleado_Cargo">
             <End Role="Cargo" EntitySet="Cargo" />
@@ -202,6 +233,7 @@
           <NavigationProperty Name="HistorialSalarial" Relationship="Self.FK_Historial_Empleado" FromRole="Empleado" ToRole="HistorialSalarial" />
           <NavigationProperty Name="SolicitudPermiso" Relationship="Self.FK_Permiso_Empleado" FromRole="Empleado" ToRole="SolicitudPermiso" />
           <Property Name="Contrasena" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="BoletaPago" Relationship="SistemaRRHHModel.FK_Boleta_Empleado" FromRole="Empleado" ToRole="BoletaPago" />
         </EntityType>
         <EntityType Name="HistorialSalarial">
           <Key>
@@ -324,7 +356,39 @@
             <End Role="Empleado" EntitySet="Empleado" />
             <End Role="SolicitudPermiso" EntitySet="SolicitudPermiso" />
           </AssociationSet>
+          <EntitySet Name="BoletaPago" EntityType="SistemaRRHHModel.BoletaPago" />
+          <AssociationSet Name="FK_Boleta_Empleado" Association="SistemaRRHHModel.FK_Boleta_Empleado">
+            <End Role="Empleado" EntitySet="Empleado" />
+            <End Role="BoletaPago" EntitySet="BoletaPago" />
+          </AssociationSet>
         </EntityContainer>
+        <EntityType Name="BoletaPago">
+          <Key>
+            <PropertyRef Name="IdBoleta" />
+          </Key>
+          <Property Name="IdBoleta" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="IdEmpleado" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="MesCorrespondiente" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="Salario" Type="Decimal" Nullable="false" Precision="10" Scale="2" />
+          <Property Name="Bonos" Type="Decimal" Nullable="false" Precision="10" Scale="2" />
+          <Property Name="Descuentos" Type="Decimal" Nullable="false" Precision="10" Scale="2" />
+          <Property Name="FechaEmision" Type="DateTime" Nullable="false" Precision="0" />
+          <NavigationProperty Name="Empleado" Relationship="SistemaRRHHModel.FK_Boleta_Empleado" FromRole="BoletaPago" ToRole="Empleado" />
+        </EntityType>
+        <Association Name="FK_Boleta_Empleado">
+          <End Type="SistemaRRHHModel.Empleado" Role="Empleado" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="SistemaRRHHModel.BoletaPago" Role="BoletaPago" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Empleado">
+              <PropertyRef Name="IdEmpleado" />
+            </Principal>
+            <Dependent Role="BoletaPago">
+              <PropertyRef Name="IdEmpleado" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -391,6 +455,19 @@
                 <ScalarProperty Name="NivelPrioridad" ColumnName="NivelPrioridad" />
                 <ScalarProperty Name="FechaSolicitud" ColumnName="FechaSolicitud" />
                 <ScalarProperty Name="EstadoAprobacion" ColumnName="EstadoAprobacion" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="BoletaPago">
+            <EntityTypeMapping TypeName="SistemaRRHHModel.BoletaPago">
+              <MappingFragment StoreEntitySet="BoletaPago">
+                <ScalarProperty Name="FechaEmision" ColumnName="FechaEmision" />
+                <ScalarProperty Name="Descuentos" ColumnName="Descuentos" />
+                <ScalarProperty Name="Bonos" ColumnName="Bonos" />
+                <ScalarProperty Name="Salario" ColumnName="Salario" />
+                <ScalarProperty Name="MesCorrespondiente" ColumnName="MesCorrespondiente" />
+                <ScalarProperty Name="IdEmpleado" ColumnName="IdEmpleado" />
+                <ScalarProperty Name="IdBoleta" ColumnName="IdBoleta" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

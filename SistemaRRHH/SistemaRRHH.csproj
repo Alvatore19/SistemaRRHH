@@ -58,6 +58,9 @@
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>
     <Compile Include="Boleta.cs" />
+    <Compile Include="BoletaPago.cs">
+      <DependentUpon>ModeloRRHH.tt</DependentUpon>
+    </Compile>
     <Compile Include="Cargo.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>
