@@ -38,3 +38,20 @@ Siga estos pasos al pie de la letra para configurar el entorno local y evitar ex
 ### 1. Clonar el Repositorio
 ```bash
 git clone [https://github.com/TU-USUARIO/SistemaRRHH.git](https://github.com/TU-USUARIO/SistemaRRHH.git)
+```
+
+### 2. Configuración de la Base de Datos
+1. Abra **SQL Server Management Studio (SSMS)** o el **Explorador de objetos de SQL Server** en Visual Studio.
+2. Ejecute el script SQL incluido en la carpeta DataBase(RRHH) en el proyecto para generar la estructura completa de la base de datos (tablas, restricciones y relaciones).
+3. Abra el archivo `App.config` en Visual Studio y actualice la cadena de conexión (`connectionString`) dentro de la sección de Entity Framework para que apunte a su servidor local de SQL Server.
+> **Nota técnica:** Si tras ejecutar el script SQL nota inconsistencias en el código, abra el archivo `.edmx` en Visual Studio y utilice la opción "Actualizar modelo desde base de datos" para sincronizar las entidades con su instancia local de SQL Server.
+
+### 3. Apertura y Restauración de Dependencias
+1. Navegue a la carpeta clonada y abra el archivo principal de la solución: `SistemaRRHH.sln`.
+2. Para asegurar que Entity Framework y otras dependencias funcionen correctamente, haga clic derecho sobre la solución en el **Explorador de soluciones** y seleccione **Restaurar paquetes NuGet**.
+3. Compile el proyecto presionando `Ctrl + Shift + B` (o en el menú **Compilar > Compilar solución**).
+
+### 4. Ejecución del Programa
+1. Verifique que el proyecto `SistemaRRHH` esté establecido como el proyecto de inicio.
+2. Presione `F5` o haga clic en el botón **"Iniciar" (Start)** en la barra superior de Visual Studio.
+3. En la pantalla de Login, ingrese utilizando las credenciales de prueba proporcionadas en la documentación interna (DUI y Contraseña).
