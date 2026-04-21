@@ -43,13 +43,14 @@ namespace SistemaRRHH
                     btnCargos.Visible = true;
                     break;
 
-                case "2": // Gerentes — Asistencias, Empleados, Permisos
+                case "2": // Gerentes — Asistencias, Permisos
                     btnAsistencia.Visible = true;
                     btnGEmpleados.Visible = true;
                     btnPermisos.Visible = true;
                     break;
 
                 case "3": // Analistas / Desarrolladores — Permisos y Portal
+                    btnAsistencia.Visible = true;
                     btnPermisos.Visible = true;
                     btnPortal.Visible = true;
                     break;
@@ -110,11 +111,11 @@ namespace SistemaRRHH
 
 
         private void button6_Click(object sender, EventArgs e) {
-            AbrirFormularioEnPanel(new FrmAsistenciaDirector());
-        } // Asistencias
+            AbrirFormularioEnPanel(new FrmAsistencia(_nivel, _idEmpleado)); // Asistencias 
+        } 
         private void button7_Click(object sender, EventArgs e)
         {
-            AbrirFormularioEnPanel(new Gestion_Empleados());               // Gestión Empleados
+            AbrirFormularioEnPanel(new Gestion_Empleados());   // Gestión Empleados
         }
         private void button8_Click(object sender, EventArgs e) 
         {
@@ -148,12 +149,5 @@ namespace SistemaRRHH
             icon_Restaurar.Visible = false; 
             icon_Max.Visible = true;
         }
-   
-        private void button1_Click_1(object sender, EventArgs e)
-        {
-            AbrirFormularioEnPanel(new FrmAsistenciaUsuario(_idEmpleado)); // Portal
-
-        }
     }
-
 }
