@@ -21,6 +21,7 @@ namespace SistemaRRHH
             this.Empleado1 = new HashSet<Empleado>();
             this.HistorialSalarial = new HashSet<HistorialSalarial>();
             this.SolicitudPermiso = new HashSet<SolicitudPermiso>();
+            this.BoletaPago = new HashSet<BoletaPago>();
         }
     
         public string IdEmpleado { get; set; }
@@ -29,6 +30,7 @@ namespace SistemaRRHH
         public string NombreCompleto { get; set; }
         public string DocumentoLegal { get; set; }
         public bool EstadoActivo { get; set; }
+        public string Contrasena { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Asistencia> Asistencia { get; set; }
@@ -40,5 +42,7 @@ namespace SistemaRRHH
         public virtual ICollection<HistorialSalarial> HistorialSalarial { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<SolicitudPermiso> SolicitudPermiso { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<BoletaPago> BoletaPago { get; set; }
     }
 }

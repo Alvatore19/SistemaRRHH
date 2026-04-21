@@ -12,18 +12,15 @@ namespace SistemaRRHH
     using System;
     using System.Collections.Generic;
     
-    public partial class SolicitudPermiso
+    public partial class BoletaPago
     {
-        public int IdSolicitud { get; set; }
+        public int IdBoleta { get; set; }
         public string IdEmpleado { get; set; }
-        public string TipoPermiso { get; set; }
-        public int NivelPrioridad { get; set; }
-        public System.DateTime FechaSolicitud { get; set; }
-        public string EstadoAprobacion { get; set; }
-        public int CantidadTiempo { get; set; }
-        public string UnidadTiempo { get; set; }
-        public string MotivoDetallado { get; set; }
-        public string RutaComprobante { get; set; }
+        public string MesCorrespondiente { get; set; }
+        public decimal Salario { get; set; }
+        public decimal Bonos { get; set; }
+        public decimal Descuentos { get; set; }
+        public System.DateTime FechaEmision { get; set; }
     
         public virtual Empleado Empleado { get; set; }
     }

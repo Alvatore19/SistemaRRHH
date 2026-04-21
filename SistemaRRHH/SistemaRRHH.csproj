@@ -57,11 +57,40 @@
     <Compile Include="Asistencia.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>
+    <Compile Include="Boleta.cs" />
+    <Compile Include="BoletaPago.cs">
+      <DependentUpon>ModeloRRHH.tt</DependentUpon>
+    </Compile>
     <Compile Include="Cargo.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>
+    <Compile Include="ColaPrioridadPermisos.cs" />
     <Compile Include="Empleado.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="FormDashboard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormDashboard.Designer.cs">
+      <DependentUpon>FormDashboard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormPermisos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormPermisos.Designer.cs">
+      <DependentUpon>FormPermisos.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormPortalEmpleado.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormPortalEmpleado.Designer.cs">
+      <DependentUpon>FormPortalEmpleado.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmAsistencia.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmAsistencia.Designer.cs">
+      <DependentUpon>FrmAsistencia.cs</DependentUpon>
     </Compile>
     <Compile Include="Gestion_Empleados.cs">
       <SubType>Form</SubType>
@@ -72,6 +101,13 @@
     <Compile Include="HistorialSalarial.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>
+    <Compile Include="FormLogin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormLogin.Designer.cs">
+      <DependentUpon>FormLogin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ListaBoletas.cs" />
     <Compile Include="ModeloRRHH.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -87,14 +123,24 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ModeloRRHH.edmx</DependentUpon>
     </Compile>
-    <Compile Include="Nodo_Empleado.cs" />
+    <Compile Include="NodoPermiso.cs" />
+    <Compile Include="NodoEmpleado.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SolicitudPermiso.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="FormDashboard.resx">
+      <DependentUpon>FormDashboard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormPermisos.resx">
+      <DependentUpon>FormPermisos.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Gestion_Empleados.resx">
       <DependentUpon>Gestion_Empleados.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormLogin.resx">
+      <DependentUpon>FormLogin.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -126,6 +172,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="DataBase%28RRHH%29\DataBase.sql" />
     <Content Include="logo.png" />
     <Content Include="ModeloRRHH.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -146,5 +193,6 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

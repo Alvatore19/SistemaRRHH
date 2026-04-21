@@ -12,12 +12,10 @@ namespace SistemaRRHH
 {
     public partial class Gestion_Empleados : Form
     {
-        // El árbol en memoria
         AN_Jerarquia miEmpresa = new AN_Jerarquia();
         int contadorEmpleados = 1;
 
-        // NUEVO: La "fuente de verdad" plana para los ComboBoxes
-        List<Nodo_Empleado> listaTodosLosEmpleados = new List<Nodo_Empleado>();
+        List<NodoEmpleado> listaTodosLosEmpleados = new List<NodoEmpleado>();
 
         public Gestion_Empleados()
         {
@@ -64,21 +62,21 @@ namespace SistemaRRHH
             cmbFusion2.DataSource = null;
 
             // 2. Enlazamos la lista general a los ComboBoxes que usan a TODOS los empleados
-            cmbJefe.DataSource = new List<Nodo_Empleado>(listaTodosLosEmpleados);
-            cmbEliminar.DataSource = new List<Nodo_Empleado>(listaTodosLosEmpleados);
-            cmbNuevoJefe.DataSource = new List<Nodo_Empleado>(listaTodosLosEmpleados);
-            cmbActualizarSeleccion.DataSource = new List<Nodo_Empleado>(listaTodosLosEmpleados);
-            cmbActualizarJefe.DataSource = new List<Nodo_Empleado>(listaTodosLosEmpleados);
+            cmbJefe.DataSource = new List<NodoEmpleado>(listaTodosLosEmpleados);
+            cmbEliminar.DataSource = new List<NodoEmpleado>(listaTodosLosEmpleados);
+            cmbNuevoJefe.DataSource = new List<NodoEmpleado>(listaTodosLosEmpleados);
+            cmbActualizarSeleccion.DataSource = new List<NodoEmpleado>(listaTodosLosEmpleados);
+            cmbActualizarJefe.DataSource = new List<NodoEmpleado>(listaTodosLosEmpleados);
 
             // 3. Llenamos los ComboBoxes de Fusión SOLO con Jefes de Departamento (hijos directos del Dueño/Raíz)
             if (miEmpresa.Raiz != null)
             {
-                List<Nodo_Empleado> jefesDepartamento = listaTodosLosEmpleados
+                List<NodoEmpleado> jefesDepartamento = listaTodosLosEmpleados
                     .Where(emp => emp.Jefe == miEmpresa.Raiz)
                     .ToList();
 
-                cmbFusion1.DataSource = new List<Nodo_Empleado>(jefesDepartamento);
-                cmbFusion2.DataSource = new List<Nodo_Empleado>(jefesDepartamento);
+                cmbFusion1.DataSource = new List<NodoEmpleado>(jefesDepartamento);
+                cmbFusion2.DataSource = new List<NodoEmpleado>(jefesDepartamento);
             }
 
             // 4. Reseteamos las selecciones para que arranquen en blanco
@@ -98,12 +96,16 @@ namespace SistemaRRHH
             if (string.IsNullOrWhiteSpace(txtNombre.Text) ||
                 cmbCargo.SelectedIndex == -1 ||
                 string.IsNullOrWhiteSpace(txtSueldo.Text) ||
-                string.IsNullOrWhiteSpace(txtDui.Text))
+                string.IsNullOrWhiteSpace(txtDui.Text) ||
+                string.IsNullOrWhiteSpace(txtUsername.Text) ||
+                string.IsNullOrWhiteSpace(txtPassword.Text))
             {
-                MessageBox.Show("Por favor, completa todos los campos (Nombre, Cargo, Sueldo y Dui) antes de ingresar.", "Campos obligatorios", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Por favor, completa todos los campos (Nombre, Cargo, Sueldo, DUI, Correo y Contraseña).",
+                    "Campos obligatorios", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
+            // --- 2. VALIDACIONES DE FORMATO (Sueldo y DUI) ---
             double sueldo = 0;
             if (!double.TryParse(txtSueldo.Text, out sueldo))
             {
@@ -113,37 +115,61 @@ namespace SistemaRRHH
 
             if (!System.Text.RegularExpressions.Regex.IsMatch(txtDui.Text, @"^\d{8}-\d$"))
             {
-                MessageBox.Show("El formato del DUI es incorrecto. Debe tener exactamente 9 números separados por un guion (Ejemplo: 12345678-9).", "DUI Inválido", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("El formato del DUI es incorrecto (Ejemplo: 12345678-9).", "DUI Inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtDui.Focus(); 
                 return;        
             }
 
-            bool duiYaExiste = listaTodosLosEmpleados.Any(emp => emp.Dui == txtDui.Text);
+            // --- 3. VALIDACIÓN DE UNICIDAD (DUI y Correo/Username) ---
 
-            if (duiYaExiste)
+            // Validar DUI único
+            if (listaTodosLosEmpleados.Any(emp => emp.Dui == txtDui.Text))
             {
-                MessageBox.Show("Este número de DUI ya se encuentra registrado en el sistema y pertenece a otro empleado. Por favor, verifica el documento.",
-                    "DUI Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Este número de DUI ya se encuentra registrado.", "DUI Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 txtDui.Focus(); 
                 txtDui.SelectAll(); 
                 return; 
             }
 
-
-            // --- 2. VALIDACIÓN DE JEFE OBLIGATORIO ---
-            if (listaTodosLosEmpleados.Count > 0 && cmbJefe.SelectedIndex == -1)
+            // Validar Formato de Correo
+            if (!txtUsername.Text.Contains("@") || !txtUsername.Text.Contains("."))
             {
-                MessageBox.Show("Ya existe un Director General (Dueño) en la empresa. Todos los nuevos empleados deben tener un jefe asignado obligatoriamente.", "Jefe Obligatorio", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("El nombre de usuario debe ser un correo electrónico válido.", "Correo Inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtUsername.Focus();
                 return;
             }
 
-            // --- 3. CREACIÓN DEL EMPLEADO ---
-            string nuevoId = "EMP-" + contadorEmpleados.ToString();
-            string nombre = txtNombre.Text;
-            string cargo = cmbCargo.SelectedItem.ToString();
+            // Validar Correo único (Username)
+            bool correoYaExiste = listaTodosLosEmpleados.Any(emp =>
+                emp.Username.Equals(txtUsername.Text.Trim(), StringComparison.OrdinalIgnoreCase));
 
-            Nodo_Empleado nuevoEmpleado = new Nodo_Empleado(nuevoId, txtDui.Text, nombre, cargo, sueldo);
+            if (correoYaExiste)
+            {
+                MessageBox.Show("Este correo electrónico ya está asignado a otro empleado.", "Correo Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txtUsername.Focus();
+                return;
+            }
+
+            // --- 4. VALIDACIÓN DE JEFE OBLIGATORIO ---
+            if (listaTodosLosEmpleados.Count > 0 && cmbJefe.SelectedIndex == -1)
+            {
+                MessageBox.Show("Debe seleccionar un jefe para el nuevo empleado.", "Jefe Obligatorio", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // --- 5. CREACIÓN E INSERCIÓN ---
+            string nuevoId = "EMP-" + contadorEmpleados.ToString();
+            NodoEmpleado nuevoEmpleado = new NodoEmpleado(
+                nuevoId,
+                txtDui.Text,
+                txtNombre.Text,
+                cmbCargo.SelectedItem.ToString(),
+                sueldo,
+                txtUsername.Text.Trim(),
+                txtPassword.Text
+            );
+
+            string nombreJefePasaMetodo = "N/A (Director General)";
 
             // --- 4. INSERCIÓN EN EL ÁRBOL ---
             if (cmbJefe.SelectedIndex == -1)
@@ -152,28 +178,35 @@ namespace SistemaRRHH
             }
             else
             {
-                string idJefeSeleccionado = ObtenerIdDelComboBox(cmbJefe);
-                miEmpresa.Insertar(nuevoEmpleado, idJefeSeleccionado);
+                NodoEmpleado jefeSeleccionado = (NodoEmpleado)cmbJefe.SelectedItem;
+                nombreJefePasaMetodo = jefeSeleccionado.Nombre;
+                miEmpresa.Insertar(nuevoEmpleado, jefeSeleccionado.Id);
             }
 
-            // --- 5. ACTUALIZACIÓN DE DATOS E INTERFAZ ---
+            // --- 6. NOTIFICACIÓN POR CORREO ---
+            AN_Jerarquia.EnviarConfirmacion(nuevoEmpleado, nombreJefePasaMetodo);
+
+            // --- 7. ACTUALIZACIÓN DE INTERFAZ ---
             contadorEmpleados++;
             listaTodosLosEmpleados.Add(nuevoEmpleado);
             ActualizarComboBoxes();
 
-            MessageBox.Show("Empleado ingresado con éxito", "Registro Exitoso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show($"Empleado registrado y correo enviado a {nuevoEmpleado.Username}", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             txtNombre.Clear();
             txtSueldo.Clear();
-            txtDui.SelectAll();
+            txtDui.Clear();
+            txtUsername.Clear();
+            txtPassword.Clear();
             txtNombre.Focus();
 
-            panelArbol.Invalidate();panelStats.Invalidate();
+            panelArbol.Invalidate();
+            panelStats.Invalidate();
         }
 
         private string ObtenerIdDelComboBox(ComboBox cmb)
         {
-            Nodo_Empleado seleccionado = (Nodo_Empleado)cmb.SelectedItem;
+            NodoEmpleado seleccionado = (NodoEmpleado)cmb.SelectedItem;
             return seleccionado.Id;
         }
 
@@ -188,7 +221,7 @@ namespace SistemaRRHH
             }
         }
 
-        private void DibujarNodo(Nodo_Empleado nodo, int x, int y, Graphics lienzo, int espacioDisponible)
+        private void DibujarNodo(NodoEmpleado nodo, int x, int y, Graphics lienzo, int espacioDisponible)
         {
             // --- Configuración de Estilo de la "Tarjeta" del Empleado ---
             int anchoTarjeta = 110; 
@@ -206,7 +239,6 @@ namespace SistemaRRHH
             Font fuente = this.Font;
             string textoMostrar = $"{nodo.Nombre}\n{nodo.Puesto}\n";
 
-            // --- Magia de GDI+ para Centrar el Texto ---
             StringFormat formatoCentrado = new StringFormat();
             formatoCentrado.Alignment = StringAlignment.Center;     
             formatoCentrado.LineAlignment = StringAlignment.Center;
@@ -221,7 +253,7 @@ namespace SistemaRRHH
 
                 int yHijo = y + 100;
 
-                foreach (Nodo_Empleado subalterno in nodo.Subalternos)
+                foreach (NodoEmpleado subalterno in nodo.Subalternos)
                 {
                     int parentBottomX = x;
                     int parentBottomY = y + (altoTarjeta / 2);
@@ -242,7 +274,7 @@ namespace SistemaRRHH
         {
             if (cmbEliminar.SelectedIndex != -1)
             {
-                Nodo_Empleado nodoSeleccionado = (Nodo_Empleado)cmbEliminar.SelectedItem;
+                NodoEmpleado nodoSeleccionado = (NodoEmpleado)cmbEliminar.SelectedItem;
                 btnEliminar.Enabled = true;
 
                 if (nodoSeleccionado.Subalternos.Count > 0)
@@ -266,7 +298,7 @@ namespace SistemaRRHH
         {
             if (cmbEliminar.SelectedIndex == -1) return;
 
-            Nodo_Empleado nodoAEliminar = (Nodo_Empleado)cmbEliminar.SelectedItem;
+            NodoEmpleado nodoAEliminar = (NodoEmpleado)cmbEliminar.SelectedItem;
 
             if (nodoAEliminar == miEmpresa.Raiz && nodoAEliminar.Subalternos.Count > 0)
             {
@@ -284,7 +316,7 @@ namespace SistemaRRHH
                     return;
                 }
 
-                Nodo_Empleado nuevoJefe = (Nodo_Empleado)cmbNuevoJefe.SelectedItem;
+                NodoEmpleado nuevoJefe = (NodoEmpleado)cmbNuevoJefe.SelectedItem;
 
                 if (nuevoJefe.Id == nodoAEliminar.Id)
                 {
@@ -301,10 +333,8 @@ namespace SistemaRRHH
             {
                 MessageBox.Show("Empleado despedido y árbol actualizado.");
 
-                // Lo borramos de nuestra lista maestra
                 listaTodosLosEmpleados.RemoveAll(emp => emp.Id == nodoAEliminar.Id);
 
-                // Y mandamos a recargar todos los ComboBoxes
                 ActualizarComboBoxes();
 
                 panelArbol.Invalidate(); panelStats.Invalidate();
@@ -320,7 +350,7 @@ namespace SistemaRRHH
                 txtActualizarSueldo.Enabled = true;
                 btnActualizar.Enabled = true;
 
-                Nodo_Empleado empSeleccionado = (Nodo_Empleado)cmbActualizarSeleccion.SelectedItem;
+                NodoEmpleado empSeleccionado = (NodoEmpleado)cmbActualizarSeleccion.SelectedItem;
 
                 txtActualizarNombre.Text = empSeleccionado.Nombre;
                 txtActualizarCargo.Text = empSeleccionado.Puesto;
@@ -330,7 +360,7 @@ namespace SistemaRRHH
                 {
                     cmbActualizarJefe.Enabled = true; 
 
-                    foreach (Nodo_Empleado item in cmbActualizarJefe.Items)
+                    foreach (NodoEmpleado item in cmbActualizarJefe.Items)
                     {
                         if (item.Id == empSeleccionado.Jefe.Id)
                         {
@@ -383,12 +413,12 @@ namespace SistemaRRHH
             }
 
             // 3. Extraer el ID del empleado a editar y el ID del nuevo jefe (si aplica)
-            Nodo_Empleado empAEditar = (Nodo_Empleado)cmbActualizarSeleccion.SelectedItem;
+            NodoEmpleado empAEditar = (NodoEmpleado)cmbActualizarSeleccion.SelectedItem;
             string idNuevoJefe = "";
 
             if (cmbActualizarJefe.Enabled && cmbActualizarJefe.SelectedIndex != -1)
             {
-                Nodo_Empleado nuevoJefe = (Nodo_Empleado)cmbActualizarJefe.SelectedItem;
+                NodoEmpleado nuevoJefe = (NodoEmpleado)cmbActualizarJefe.SelectedItem;
                 idNuevoJefe = nuevoJefe.Id;
             }
 
@@ -419,8 +449,8 @@ namespace SistemaRRHH
                 return;
             }
 
-            Nodo_Empleado jefe1 = (Nodo_Empleado)cmbFusion1.SelectedItem;
-            Nodo_Empleado jefe2 = (Nodo_Empleado)cmbFusion2.SelectedItem;
+            NodoEmpleado jefe1 = (NodoEmpleado)cmbFusion1.SelectedItem;
+            NodoEmpleado jefe2 = (NodoEmpleado)cmbFusion2.SelectedItem;
 
             if (jefe1.Id == jefe2.Id)
             {
@@ -452,15 +482,12 @@ namespace SistemaRRHH
             {
                 MessageBox.Show("¡Fusión completada con éxito! La estructura se ha actualizado.", "Fusión Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                // Limpiamos la interfaz
                 txtNuevoCargoFusion.Clear();
                 rbJefe1.Checked = false;
                 rbJefe2.Checked = false;
 
-                // Recargamos todo para que los ComboBox reflejen los cambios
                 ActualizarComboBoxes();
 
-                // Redibujamos el árbol
                 panelArbol.Invalidate(); panelStats.Invalidate();
             }
             else
@@ -472,9 +499,8 @@ namespace SistemaRRHH
         private void panelStats_Paint(object sender, PaintEventArgs e)
         {
             Graphics lienzo = e.Graphics;
-            lienzo.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias; // Para que los bordes del círculo se vean suaves
+            lienzo.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias; 
 
-            // Si no hay empresa o no hay departamentos (hijos directos de la raíz), no dibujamos nada
             if (miEmpresa.Raiz == null || miEmpresa.Raiz.Subalternos.Count == 0)
             {
                 lienzo.DrawString("Aún no hay departamentos para mostrar estadísticas.", this.Font, Brushes.Gray, 10, 10);
@@ -486,12 +512,10 @@ namespace SistemaRRHH
             List<int> cantidades = new List<int>();
             int totalEmpleadosEnDepartamentos = 0;
 
-            // Los departamentos son los hijos directos del dueño (Raíz)
-            foreach (Nodo_Empleado jefeDep in miEmpresa.Raiz.Subalternos)
+            foreach (NodoEmpleado jefeDep in miEmpresa.Raiz.Subalternos)
             {
                 nombresDepartamentos.Add(jefeDep.Nombre + " (" + jefeDep.Puesto + ")");
 
-                // Contamos cuánta gente hay en todo su departamento usando el nuevo método
                 int tamanoDepartamento = miEmpresa.ContarEmpleadosSubarbol(jefeDep);
                 cantidades.Add(tamanoDepartamento);
 
@@ -516,7 +540,7 @@ namespace SistemaRRHH
                 Brush brochaColor = new SolidBrush(coloresPastel[i % coloresPastel.Length]);
 
                 lienzo.FillPie(brochaColor, rectPastel, anguloInicio, anguloBarrido);
-                lienzo.DrawPie(Pens.Black, rectPastel, anguloInicio, anguloBarrido); // Borde
+                lienzo.DrawPie(Pens.Black, rectPastel, anguloInicio, anguloBarrido); 
 
                 // 4. Dibujar la leyenda (a la derecha del pastel)
                 int leyendaX = 180;
@@ -531,7 +555,6 @@ namespace SistemaRRHH
                 leyendaY += 25;
             }
 
-            // Mostrar el total general abajo de la leyenda
             lienzo.DrawString($"Total en departamentos: {totalEmpleadosEnDepartamentos}", new Font(this.Font, FontStyle.Bold), Brushes.Black, 180, leyendaY + 10);
         }
 
@@ -557,21 +580,7 @@ namespace SistemaRRHH
             }
         }
 
-
-
-        private void label6_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label10_Click(object sender, EventArgs e)
-        {
-
-        }
+        private void label6_Click(object sender, EventArgs e){}
+        private void label10_Click(object sender, EventArgs e){}
     }
 }

@@ -1,6 +1,6 @@
--- ==============================================
+-- =============================================================
 -- Script de Base de Datos: SistemaRRHH (Para Entity Framework)
--- ==============================================
+-- =============================================================
 DROP DATABASE IF EXISTS SistemaRRHH;
 CREATE DATABASE SistemaRRHH;
 GO
@@ -8,9 +8,9 @@ GO
 USE SistemaRRHH;
 GO
 
--- ==============================================
+-- =====================================================
 -- 1. Creación de Tablas con Restricciones (Constraints)
--- ==============================================
+-- =====================================================
 
 CREATE TABLE Cargo(
     IdCargo INT IDENTITY(1,1) NOT NULL,
@@ -44,6 +44,18 @@ CREATE TABLE HistorialSalarial(
     CONSTRAINT FK_Historial_Empleado FOREIGN KEY(IdEmpleado) REFERENCES Empleado(IdEmpleado) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+CREATE TABLE BoletaPago(
+    IdBoleta INT IDENTITY(1,1) NOT NULL,
+    IdEmpleado VARCHAR(20) NOT NULL,
+    MesCorrespondiente VARCHAR(30) NOT NULL,
+    Salario DECIMAL(10,2) NOT NULL,
+    Bonos DECIMAL(10,2) NOT NULL DEFAULT 0,
+    Descuentos DECIMAL(10,2) NOT NULL DEFAULT 0,
+    FechaEmision DATE NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT PK_IdBoleta PRIMARY KEY(IdBoleta),
+    CONSTRAINT FK_Boleta_Empleado FOREIGN KEY(IdEmpleado) REFERENCES Empleado(IdEmpleado) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 CREATE TABLE Asistencia(
     LlaveHash VARCHAR(50) NOT NULL, 
     IdEmpleado VARCHAR(20) NOT NULL,
@@ -56,7 +68,6 @@ CREATE TABLE Asistencia(
     CONSTRAINT FK_Asistencia_Empleado FOREIGN KEY(IdEmpleado) REFERENCES Empleado(IdEmpleado) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- IDENTITY añadido
 CREATE TABLE SolicitudPermiso(
     IdSolicitud INT IDENTITY(1,1) NOT NULL,
     IdEmpleado VARCHAR(20) NOT NULL,
@@ -64,6 +75,10 @@ CREATE TABLE SolicitudPermiso(
     NivelPrioridad INT NOT NULL CHECK (NivelPrioridad BETWEEN 1 AND 5), 
     FechaSolicitud DATETIME NOT NULL DEFAULT GETDATE(),
     EstadoAprobacion VARCHAR(20) NOT NULL DEFAULT 'Pendiente', 
+    CantidadTiempo INT NOT NULL DEFAULT 1,
+    UnidadTiempo VARCHAR(10) NOT NULL DEFAULT 'Dias',
+    MotivoDetallado VARCHAR(500) NOT NULL DEFAULT 'Sin especificar',
+    RutaComprobante VARCHAR(500) NULL,     
     CONSTRAINT PK_IdSolicitud PRIMARY KEY(IdSolicitud),
     CONSTRAINT FK_Permiso_Empleado FOREIGN KEY(IdEmpleado) REFERENCES Empleado(IdEmpleado) ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -98,9 +113,14 @@ INSERT INTO HistorialSalarial (IdEmpleado, Monto, TipoModificacion, FechaAplicac
 INSERT INTO Asistencia (LlaveHash, IdEmpleado, Fecha, HoraEntrada, HoraSalida, HorasTrabajadas, EstadoJornada) VALUES 
 ('45678901-2_20260331', 'EMP-4', '2026-03-31', '2026-03-31 08:00:00', '2026-03-31 17:00:00', 8.0, 'A Tiempo');
 
-INSERT INTO SolicitudPermiso (IdEmpleado, TipoPermiso, NivelPrioridad, EstadoAprobacion) VALUES 
-('EMP-5', 'Vacaciones Anuales', 3, 'Pendiente'),
-('EMP-4', 'Incapacidad Medica', 1, 'Pendiente');
+INSERT INTO SolicitudPermiso 
+(IdEmpleado, TipoPermiso, NivelPrioridad, EstadoAprobacion, CantidadTiempo, UnidadTiempo, MotivoDetallado, RutaComprobante) 
+VALUES 
+('EMP-5', 'Vacaciones Anuales', 3, 'Pendiente', 5, 'Dias', 'Solicitud de vacaciones anuales correspondientes a ley para viaje familiar.', NULL),
+('EMP-4', 'Incapacidad Medica', 1, 'Pendiente', 48, 'Horas', 'Incapacidad extendida por el ISSS debido a infección estomacal severa.', 'C:\Documentos\Incapacidad_ISSS_EMP4.pdf');
 GO
 
-PRINT 'Base de datos generada e inicializada correctamente para Entity Framework.';
+-- ========================================================================================
+-- 3. Cambios que se puedan llegar a realizar en la Base de Datos a futuro (Alter Table)
+--    Una vez que realicen sus cambios, borren el alter table y corrijan la tabla original
+-- ========================================================================================
