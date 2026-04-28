@@ -1,6 +1,6 @@
 ﻿namespace SistemaRRHH
 {
-    partial class FrmAsistencia
+    partial class FormAsistencia
     {
         private System.ComponentModel.IContainer components = null;
 

@@ -1,6 +1,6 @@
 ﻿namespace SistemaRRHH
 {
-    partial class Gestion_Empleados
+    partial class FormGestionEmpleados
     {
         /// <summary>
         /// Variable del diseñador necesaria.

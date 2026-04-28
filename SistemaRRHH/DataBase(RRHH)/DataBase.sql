@@ -28,6 +28,7 @@ CREATE TABLE Empleado(
     DocumentoLegal VARCHAR(15) NOT NULL, 
     EstadoActivo BIT NOT NULL DEFAULT 1,
     Contrasena VARCHAR(100) NOT NULL,
+    CorreoElectronico VARCHAR(100) NULL,
     CONSTRAINT PK_IdEmpleado PRIMARY KEY(IdEmpleado),
     CONSTRAINT UQ_DocumentoLegal UNIQUE (DocumentoLegal), 
     CONSTRAINT FK_Empleado_Cargo FOREIGN KEY(IdCargo) REFERENCES Cargo(IdCargo) ON DELETE CASCADE ON UPDATE CASCADE,

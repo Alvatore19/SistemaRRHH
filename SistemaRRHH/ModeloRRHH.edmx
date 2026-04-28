@@ -49,6 +49,7 @@
           <Property Name="DocumentoLegal" Type="varchar" MaxLength="15" Nullable="false" />
           <Property Name="EstadoActivo" Type="bit" Nullable="false" />
           <Property Name="Contrasena" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="CorreoElectronico" Type="varchar" MaxLength="100" />
         </EntityType>
         <EntityType Name="HistorialSalarial">
           <Key>
@@ -234,6 +235,7 @@
           <NavigationProperty Name="SolicitudPermiso" Relationship="Self.FK_Permiso_Empleado" FromRole="Empleado" ToRole="SolicitudPermiso" />
           <Property Name="Contrasena" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="BoletaPago" Relationship="SistemaRRHHModel.FK_Boleta_Empleado" FromRole="Empleado" ToRole="BoletaPago" />
+          <Property Name="CorreoElectronico" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="HistorialSalarial">
           <Key>
@@ -421,6 +423,7 @@
           <EntitySetMapping Name="Empleado">
             <EntityTypeMapping TypeName="SistemaRRHHModel.Empleado">
               <MappingFragment StoreEntitySet="Empleado">
+                <ScalarProperty Name="CorreoElectronico" ColumnName="CorreoElectronico" />
                 <ScalarProperty Name="Contrasena" ColumnName="Contrasena" />
                 <ScalarProperty Name="IdEmpleado" ColumnName="IdEmpleado" />
                 <ScalarProperty Name="IdCargo" ColumnName="IdCargo" />

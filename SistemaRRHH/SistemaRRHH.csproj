@@ -74,6 +74,12 @@
     <Compile Include="FormDashboard.Designer.cs">
       <DependentUpon>FormDashboard.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormGestionCargos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormGestionCargos.Designer.cs">
+      <DependentUpon>FormGestionCargos.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormPermisos.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -86,17 +92,17 @@
     <Compile Include="FormPortalEmpleado.Designer.cs">
       <DependentUpon>FormPortalEmpleado.cs</DependentUpon>
     </Compile>
-    <Compile Include="FrmAsistencia.cs">
+    <Compile Include="FormAsistencia.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FrmAsistencia.Designer.cs">
-      <DependentUpon>FrmAsistencia.cs</DependentUpon>
+    <Compile Include="FormAsistencia.Designer.cs">
+      <DependentUpon>FormAsistencia.cs</DependentUpon>
     </Compile>
-    <Compile Include="Gestion_Empleados.cs">
+    <Compile Include="FormGestionEmpleados.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Gestion_Empleados.Designer.cs">
-      <DependentUpon>Gestion_Empleados.cs</DependentUpon>
+    <Compile Include="FormGestionEmpleados.Designer.cs">
+      <DependentUpon>FormGestionEmpleados.cs</DependentUpon>
     </Compile>
     <Compile Include="HistorialSalarial.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
@@ -136,8 +142,8 @@
     <EmbeddedResource Include="FormPermisos.resx">
       <DependentUpon>FormPermisos.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Gestion_Empleados.resx">
-      <DependentUpon>Gestion_Empleados.cs</DependentUpon>
+    <EmbeddedResource Include="FormGestionEmpleados.resx">
+      <DependentUpon>FormGestionEmpleados.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormLogin.resx">
       <DependentUpon>FormLogin.cs</DependentUpon>

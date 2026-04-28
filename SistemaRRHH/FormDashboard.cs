@@ -111,11 +111,11 @@ namespace SistemaRRHH
 
 
         private void button6_Click(object sender, EventArgs e) {
-            AbrirFormularioEnPanel(new FrmAsistencia(_nivel, _idEmpleado)); // Asistencias 
+            AbrirFormularioEnPanel(new FormAsistencia(_nivel, _idEmpleado)); // Asistencias 
         } 
         private void button7_Click(object sender, EventArgs e)
         {
-            AbrirFormularioEnPanel(new Gestion_Empleados());   // Gestión Empleados
+            AbrirFormularioEnPanel(new FormGestionEmpleados());   // Gestión Empleados
         }
         private void button8_Click(object sender, EventArgs e) 
         {

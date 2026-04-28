@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace SistemaRRHH
 {
-    public partial class FrmAsistencia : Form
+    public partial class FormAsistencia : Form
     {
         private string _nivelUsuario;
         private string _idEmpleadoActual;
@@ -16,7 +16,7 @@ namespace SistemaRRHH
         private DateTime entrada;
         private Timer timerAsistencia;
 
-        public FrmAsistencia(string nivel, string idEmpleado)
+        public FormAsistencia(string nivel, string idEmpleado)
         {
             InitializeComponent();
             _nivelUsuario = nivel;
@@ -136,7 +136,7 @@ namespace SistemaRRHH
                 if (estado == "A Tiempo") row.DefaultCellStyle.BackColor = Color.LightGreen;
                 else if (estado == "Media Jornada") row.DefaultCellStyle.BackColor = Color.Khaki;
                 else if (estado == "Incompleto") row.DefaultCellStyle.BackColor = Color.LightCoral;
-                else row.DefaultCellStyle.BackColor = Color.LightSkyBlue; // En Proceso
+                else row.DefaultCellStyle.BackColor = Color.LightSkyBlue; 
             }
         }
 
@@ -210,7 +210,6 @@ namespace SistemaRRHH
 
                 if (asistenciaHoy != null && asistenciaHoy.EstadoJornada == "En Proceso")
                 {
-                    // Ya había marcado entrada, reactivamos el timer
                     entrada = asistenciaHoy.HoraEntrada.Value;
                     trabajando = true;
                     btnAccionAsistencia.Text = "🛑 FINALIZAR JORNADA";
@@ -220,7 +219,6 @@ namespace SistemaRRHH
                 }
                 else if (asistenciaHoy != null)
                 {
-                    // Ya terminó su jornada
                     btnAccionAsistencia.Enabled = false;
                     btnAccionAsistencia.Text = "JORNADA COMPLETADA";
                     btnAccionAsistencia.BackColor = Color.Gray;
@@ -296,7 +294,7 @@ namespace SistemaRRHH
             lblEstadoActual.Text = "Estado: FINALIZADO";
             btnAccionAsistencia.Text = "JORNADA COMPLETADA";
             btnAccionAsistencia.BackColor = Color.Gray;
-            btnAccionAsistencia.Enabled = false; // Bloqueamos el botón para que no marque 2 veces
+            btnAccionAsistencia.Enabled = false; 
             CargarHistorialEmpleado();
         }
     }

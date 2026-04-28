@@ -10,14 +10,14 @@ using System.Windows.Forms;
 
 namespace SistemaRRHH
 {
-    public partial class Gestion_Empleados : Form
+    public partial class FormGestionEmpleados : Form
     {
         AN_Jerarquia miEmpresa = new AN_Jerarquia();
         int contadorEmpleados = 1;
 
         List<NodoEmpleado> listaTodosLosEmpleados = new List<NodoEmpleado>();
 
-        public Gestion_Empleados()
+        public FormGestionEmpleados()
         {
             InitializeComponent();
 
@@ -89,125 +89,108 @@ namespace SistemaRRHH
             if (cmbFusion2.Items.Count > 0) cmbFusion2.SelectedIndex = -1;
         }
 
-
         private void btnIngresarEmpleado_Click(object sender, EventArgs e)
         {
             // --- 1. VALIDACIONES DE CAMPOS OBLIGATORIOS ---
-            if (string.IsNullOrWhiteSpace(txtNombre.Text) ||
-                cmbCargo.SelectedIndex == -1 ||
-                string.IsNullOrWhiteSpace(txtSueldo.Text) ||
-                string.IsNullOrWhiteSpace(txtDui.Text) ||
-                string.IsNullOrWhiteSpace(txtUsername.Text) ||
+            if (string.IsNullOrWhiteSpace(txtNombre.Text) || cmbCargo.SelectedIndex == -1 ||
+                string.IsNullOrWhiteSpace(txtDui.Text) || string.IsNullOrWhiteSpace(txtUsername.Text) ||
                 string.IsNullOrWhiteSpace(txtPassword.Text))
             {
-                MessageBox.Show("Por favor, completa todos los campos (Nombre, Cargo, Sueldo, DUI, Correo y Contraseña).",
-                    "Campos obligatorios", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // --- 2. VALIDACIONES DE FORMATO (Sueldo y DUI) ---
-            double sueldo = 0;
-            if (!double.TryParse(txtSueldo.Text, out sueldo))
-            {
-                MessageBox.Show("El sueldo debe ser un valor numérico válido.", "Error de formato", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Por favor, completa todos los campos obligatorios.", "Campos incompletos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (!System.Text.RegularExpressions.Regex.IsMatch(txtDui.Text, @"^\d{8}-\d$"))
             {
                 MessageBox.Show("El formato del DUI es incorrecto (Ejemplo: 12345678-9).", "DUI Inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtDui.Focus(); 
-                return;        
+                txtDui.Focus(); return;
             }
 
-            // --- 3. VALIDACIÓN DE UNICIDAD (DUI y Correo/Username) ---
-
-            // Validar DUI único
-            if (listaTodosLosEmpleados.Any(emp => emp.Dui == txtDui.Text))
-            {
-                MessageBox.Show("Este número de DUI ya se encuentra registrado.", "DUI Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                txtDui.Focus(); 
-                txtDui.SelectAll(); 
-                return; 
-            }
-
-            // Validar Formato de Correo
             if (!txtUsername.Text.Contains("@") || !txtUsername.Text.Contains("."))
             {
                 MessageBox.Show("El nombre de usuario debe ser un correo electrónico válido.", "Correo Inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtUsername.Focus();
-                return;
+                txtUsername.Focus(); return;
             }
 
-            // Validar Correo único (Username)
-            bool correoYaExiste = listaTodosLosEmpleados.Any(emp =>
-                emp.Username.Equals(txtUsername.Text.Trim(), StringComparison.OrdinalIgnoreCase));
-
-            if (correoYaExiste)
-            {
-                MessageBox.Show("Este correo electrónico ya está asignado a otro empleado.", "Correo Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                txtUsername.Focus();
-                return;
-            }
-
-            // --- 4. VALIDACIÓN DE JEFE OBLIGATORIO ---
             if (listaTodosLosEmpleados.Count > 0 && cmbJefe.SelectedIndex == -1)
             {
                 MessageBox.Show("Debe seleccionar un jefe para el nuevo empleado.", "Jefe Obligatorio", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // --- 5. CREACIÓN E INSERCIÓN ---
             string nuevoId = "EMP-" + contadorEmpleados.ToString();
-            NodoEmpleado nuevoEmpleado = new NodoEmpleado(
-                nuevoId,
-                txtDui.Text,
-                txtNombre.Text,
-                cmbCargo.SelectedItem.ToString(),
-                sueldo,
-                txtUsername.Text.Trim(),
-                txtPassword.Text
-            );
+            string nombreCargo = cmbCargo.SelectedItem.ToString();
+            string correoIngresado = txtUsername.Text.Trim();
 
-            string nombreJefePasaMetodo = "N/A (Director General)";
-
-            // --- 4. INSERCIÓN EN EL ÁRBOL ---
-            if (cmbJefe.SelectedIndex == -1)
+            // --- 2. VALIDACIÓN DE UNICIDAD Y GUARDADO EN SQL SERVER ---
+            using (var db = new SistemaRRHHEntities())
             {
-                miEmpresa.Raiz = nuevoEmpleado;
-            }
-            else
-            {
-                NodoEmpleado jefeSeleccionado = (NodoEmpleado)cmbJefe.SelectedItem;
-                nombreJefePasaMetodo = jefeSeleccionado.Nombre;
-                miEmpresa.Insertar(nuevoEmpleado, jefeSeleccionado.Id);
+                // Validar si DUI ya existe en la BD
+                if (db.Empleado.Any(emp => emp.DocumentoLegal == txtDui.Text))
+                {
+                    MessageBox.Show("Este número de DUI ya se encuentra registrado.", "DUI Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    txtDui.Focus(); return;
+                }
+
+                // Validar si Correo ya existe en la BD
+                if (db.Empleado.Any(emp => emp.CorreoElectronico == correoIngresado))
+                {
+                    MessageBox.Show("Este correo ya está asignado a otro empleado.", "Correo Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    txtUsername.Focus(); return;
+                }
+
+                // Buscar el IdCargo (Asumiendo que tienes una tabla Cargo y buscas por el nombre)
+                var cargoBD = db.Cargo.FirstOrDefault(c => c.NombreRol == nombreCargo);
+                int idCargoSQL = cargoBD != null ? cargoBD.IdCargo : 4; // 4 = ID por defecto si no lo encuentra
+
+                // Obtener el Id del Jefe
+                string idJefeSQL = null;
+                string nombreJefePasaMetodo = "N/A (Director General)";
+
+                if (cmbJefe.SelectedIndex != -1)
+                {
+                    NodoEmpleado jefeSeleccionado = (NodoEmpleado)cmbJefe.SelectedItem;
+                    idJefeSQL = jefeSeleccionado.Id;
+                    nombreJefePasaMetodo = jefeSeleccionado.Nombre;
+                }
+
+                // Crear la entidad para SQL
+                var nuevoEmpBD = new Empleado
+                {
+                    IdEmpleado = nuevoId,
+                    IdCargo = idCargoSQL,
+                    IdJefe = idJefeSQL,
+                    NombreCompleto = txtNombre.Text,
+                    DocumentoLegal = txtDui.Text,
+                    EstadoActivo = true,
+                    Contrasena = txtPassword.Text,
+                    CorreoElectronico = correoIngresado
+                    // SalarioBase = double.Parse(txtSueldo.Text) // <-- Descomentar si agregas el campo a la BD
+                };
+
+                db.Empleado.Add(nuevoEmpBD);
+                db.SaveChanges(); // ¡Se guarda en el disco duro!
+
+                // --- 3. INSERCIÓN EN EL ÁRBOL (RAM) ---
+                NodoEmpleado nuevoNodoArbol = new NodoEmpleado(nuevoId, txtDui.Text, txtNombre.Text, nombreCargo, 0 /*Sueldo temporal*/, correoIngresado, txtPassword.Text);
+
+                if (idJefeSQL == null)
+                    miEmpresa.Raiz = nuevoNodoArbol;
+                else
+                    miEmpresa.Insertar(nuevoNodoArbol, idJefeSQL);
+
+                listaTodosLosEmpleados.Add(nuevoNodoArbol);
+
+                AN_Jerarquia.EnviarConfirmacion(nuevoNodoArbol, nombreJefePasaMetodo);
             }
 
-            // --- 6. NOTIFICACIÓN POR CORREO ---
-            AN_Jerarquia.EnviarConfirmacion(nuevoEmpleado, nombreJefePasaMetodo);
-
-            // --- 7. ACTUALIZACIÓN DE INTERFAZ ---
+            // --- 4. ACTUALIZACIÓN DE INTERFAZ ---
             contadorEmpleados++;
-            listaTodosLosEmpleados.Add(nuevoEmpleado);
             ActualizarComboBoxes();
+            MessageBox.Show("Empleado registrado correctamente en la Base de Datos.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            MessageBox.Show($"Empleado registrado y correo enviado a {nuevoEmpleado.Username}", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-            txtNombre.Clear();
-            txtSueldo.Clear();
-            txtDui.Clear();
-            txtUsername.Clear();
-            txtPassword.Clear();
-            txtNombre.Focus();
-
-            panelArbol.Invalidate();
-            panelStats.Invalidate();
-        }
-
-        private string ObtenerIdDelComboBox(ComboBox cmb)
-        {
-            NodoEmpleado seleccionado = (NodoEmpleado)cmb.SelectedItem;
-            return seleccionado.Id;
+            txtNombre.Clear(); txtSueldo.Clear(); txtDui.Clear(); txtUsername.Clear(); txtPassword.Clear();
+            panelArbol.Invalidate(); panelStats.Invalidate();
         }
 
         private void panelArbol_Paint(object sender, PaintEventArgs e)
@@ -306,8 +289,7 @@ namespace SistemaRRHH
                 return;
             }
 
-            string idNuevoJefe = "";
-
+            string idNuevoJefe = null;
             if (nodoAEliminar.Subalternos.Count > 0)
             {
                 if (cmbNuevoJefe.SelectedIndex == -1)
@@ -317,26 +299,39 @@ namespace SistemaRRHH
                 }
 
                 NodoEmpleado nuevoJefe = (NodoEmpleado)cmbNuevoJefe.SelectedItem;
-
                 if (nuevoJefe.Id == nodoAEliminar.Id)
                 {
                     MessageBox.Show("El nuevo jefe no puede ser la misma persona a despedir.");
                     return;
                 }
-
                 idNuevoJefe = nuevoJefe.Id;
             }
 
+            // --- 1. ELIMINAR EN SQL SERVER Y REASIGNAR ---
+            using (var db = new SistemaRRHHEntities())
+            {
+                var empBD = db.Empleado.FirstOrDefault(emp => emp.IdEmpleado == nodoAEliminar.Id);
+                if (empBD != null)
+                {
+                    var subalternosBD = db.Empleado.Where(emp => emp.IdJefe == nodoAEliminar.Id).ToList();
+                    foreach (var sub in subalternosBD)
+                    {
+                        sub.IdJefe = idNuevoJefe;
+                    }
+
+                    db.Empleado.Remove(empBD);
+                    db.SaveChanges(); 
+                }
+            }
+
+            // --- 2. ELIMINAR EN EL ÁRBOL (RAM) ---
             bool exito = miEmpresa.EliminarConReasignacion(nodoAEliminar.Id, idNuevoJefe);
 
             if (exito)
             {
-                MessageBox.Show("Empleado despedido y árbol actualizado.");
-
+                MessageBox.Show("Empleado despedido y base de datos actualizada.");
                 listaTodosLosEmpleados.RemoveAll(emp => emp.Id == nodoAEliminar.Id);
-
                 ActualizarComboBoxes();
-
                 panelArbol.Invalidate(); panelStats.Invalidate();
             }
         }
@@ -393,28 +388,16 @@ namespace SistemaRRHH
 
         private void btnActualizar_Click(object sender, EventArgs e)
         {
-            // 1. Validar que haya alguien seleccionado
             if (cmbActualizarSeleccion.SelectedIndex == -1) return;
 
-            // 2. Validar campos obligatorios
-            if (string.IsNullOrWhiteSpace(txtActualizarNombre.Text) ||
-                string.IsNullOrWhiteSpace(txtActualizarCargo.Text) ||
-                string.IsNullOrWhiteSpace(txtActualizarSueldo.Text))
+            if (string.IsNullOrWhiteSpace(txtActualizarNombre.Text) || string.IsNullOrWhiteSpace(txtActualizarCargo.Text))
             {
-                MessageBox.Show("Por favor, completa Nombre, Cargo y Sueldo.");
+                MessageBox.Show("Por favor, completa Nombre y Cargo.");
                 return;
             }
 
-            double nuevoSueldo = 0;
-            if (!double.TryParse(txtActualizarSueldo.Text, out nuevoSueldo))
-            {
-                MessageBox.Show("El sueldo debe ser un número válido.");
-                return;
-            }
-
-            // 3. Extraer el ID del empleado a editar y el ID del nuevo jefe (si aplica)
             NodoEmpleado empAEditar = (NodoEmpleado)cmbActualizarSeleccion.SelectedItem;
-            string idNuevoJefe = "";
+            string idNuevoJefe = null;
 
             if (cmbActualizarJefe.Enabled && cmbActualizarJefe.SelectedIndex != -1)
             {
@@ -422,21 +405,35 @@ namespace SistemaRRHH
                 idNuevoJefe = nuevoJefe.Id;
             }
 
-            // 4. ¡Delegamos la responsabilidad a la clase del Árbol!
-            bool exito = miEmpresa.ActualizarEmpleado(empAEditar.Id, txtActualizarNombre.Text, txtActualizarCargo.Text, nuevoSueldo, idNuevoJefe);
+            // --- 1. ACTUALIZAR EN EL ÁRBOL (RAM) ---
+            bool exito = miEmpresa.ActualizarEmpleado(empAEditar.Id, txtActualizarNombre.Text, txtActualizarCargo.Text, 0 /*sueldo temporal*/, idNuevoJefe);
 
             if (exito)
             {
-                MessageBox.Show("Datos actualizados correctamente.");
+                // --- 2. ACTUALIZAR EN SQL SERVER ---
+                using (var db = new SistemaRRHHEntities())
+                {
+                    var empBD = db.Empleado.FirstOrDefault(emp => emp.IdEmpleado == empAEditar.Id);
+                    if (empBD != null)
+                    {
+                        empBD.NombreCompleto = txtActualizarNombre.Text;
 
+                        var cargoBD = db.Cargo.FirstOrDefault(c => c.NombreRol == txtActualizarCargo.Text);
+                        if (cargoBD != null) empBD.IdCargo = cargoBD.IdCargo;
+
+                        if (idNuevoJefe != null) empBD.IdJefe = idNuevoJefe;
+
+                        db.SaveChanges();
+                    }
+                }
+
+                MessageBox.Show("Datos actualizados correctamente en Memoria y Base de Datos.");
                 ActualizarComboBoxes();
-
                 panelArbol.Invalidate(); panelStats.Invalidate();
             }
             else
             {
-                MessageBox.Show("Error al actualizar. Verifica que el nuevo jefe sea válido (no puede ser él mismo ni alguien de su propio departamento).",
-                    "Error de Jerarquía", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error al actualizar. Verifica que el nuevo jefe sea válido.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
