@@ -24,6 +24,9 @@ namespace SistemaRRHH
         public string NombreRol { get; set; }
         public int NivelJerarquico { get; set; }
         public decimal SalarioBase { get; set; }
+        public decimal BonoEscala1 { get; set; }
+        public decimal BonoEscala2 { get; set; }
+        public decimal BonoEscala3 { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Empleado> Empleado { get; set; }

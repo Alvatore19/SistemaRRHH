@@ -121,7 +121,10 @@ namespace SistemaRRHH
         {
             AbrirFormularioEnPanel(new FormPermisos(_nivel, _idEmpleado)); // Permisos 
         }
-        private void btn_Consultas_Pedidos_Click(object sender, EventArgs e) { } // Cargos
+        private void btn_Consultas_Pedidos_Click(object sender, EventArgs e) 
+        {
+            AbrirFormularioEnPanel(new FormGestionCargos());   // Gestión Cargos
+        } 
         private void btnPortal_Click(object sender, EventArgs e) {
             AbrirFormularioEnPanel(new FormPortalEmpleado(_idEmpleado)); // Portal
         } 

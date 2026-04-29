@@ -37,6 +37,9 @@
           <Property Name="NombreRol" Type="varchar" MaxLength="100" Nullable="false" />
           <Property Name="NivelJerarquico" Type="int" Nullable="false" />
           <Property Name="SalarioBase" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="BonoEscala1" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="BonoEscala2" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="BonoEscala3" Type="decimal" Precision="10" Scale="2" Nullable="false" />
         </EntityType>
         <EntityType Name="Empleado">
           <Key>
@@ -216,6 +219,9 @@
           <Property Name="NivelJerarquico" Type="Int32" Nullable="false" />
           <Property Name="SalarioBase" Type="Decimal" Precision="10" Scale="2" Nullable="false" />
           <NavigationProperty Name="Empleado" Relationship="Self.FK_Empleado_Cargo" FromRole="Cargo" ToRole="Empleado" />
+          <Property Name="BonoEscala1" Type="Decimal" Nullable="false" Precision="10" Scale="2" />
+          <Property Name="BonoEscala2" Type="Decimal" Nullable="false" Precision="10" Scale="2" />
+          <Property Name="BonoEscala3" Type="Decimal" Nullable="false" Precision="10" Scale="2" />
         </EntityType>
         <EntityType Name="Empleado">
           <Key>
@@ -413,6 +419,9 @@
           <EntitySetMapping Name="Cargo">
             <EntityTypeMapping TypeName="SistemaRRHHModel.Cargo">
               <MappingFragment StoreEntitySet="Cargo">
+                <ScalarProperty Name="BonoEscala3" ColumnName="BonoEscala3" />
+                <ScalarProperty Name="BonoEscala2" ColumnName="BonoEscala2" />
+                <ScalarProperty Name="BonoEscala1" ColumnName="BonoEscala1" />
                 <ScalarProperty Name="IdCargo" ColumnName="IdCargo" />
                 <ScalarProperty Name="NombreRol" ColumnName="NombreRol" />
                 <ScalarProperty Name="NivelJerarquico" ColumnName="NivelJerarquico" />
