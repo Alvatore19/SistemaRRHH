@@ -38,6 +38,21 @@ CREATE TABLE Empleado(
     CONSTRAINT FK_Empleado_Jefe FOREIGN KEY(IdJefe) REFERENCES Empleado(IdEmpleado) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
+CREATE TABLE SolicitudDespido (
+    IdSolicitud INT IDENTITY(1,1) NOT NULL,
+    IdSolicitante VARCHAR(20) NOT NULL, -- El Analista que pide el despido
+    IdEmpleadoADespedir VARCHAR(20) NOT NULL,
+    IdNuevoJefeAsignado VARCHAR(20) NULL, -- A quién se le pasa el equipo
+    MotivoDespido VARCHAR(500) NOT NULL,
+    EstadoAprobacion VARCHAR(20) NOT NULL DEFAULT 'Pendiente', -- Pendiente, Aprobado, Denegado
+    MotivoRechazo VARCHAR(500) NULL,
+    FechaSolicitud DATETIME NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT PK_SolicitudDespido PRIMARY KEY (IdSolicitud),
+    CONSTRAINT FK_Despido_Solicitante FOREIGN KEY (IdSolicitante) REFERENCES Empleado(IdEmpleado) ON DELETE NO ACTION,
+    CONSTRAINT FK_Despido_Empleado FOREIGN KEY (IdEmpleadoADespedir) REFERENCES Empleado(IdEmpleado) ON DELETE NO ACTION
+);
+GO
+
 CREATE TABLE HistorialSalarial(
     IdHistorial INT IDENTITY(1,1) NOT NULL,
     IdEmpleado VARCHAR(20) NOT NULL,

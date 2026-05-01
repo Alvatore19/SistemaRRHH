@@ -115,7 +115,7 @@ namespace SistemaRRHH
         } 
         private void button7_Click(object sender, EventArgs e)
         {
-            AbrirFormularioEnPanel(new FormGestionEmpleados());   // Gestión Empleados
+            AbrirFormularioEnPanel(new FormGestionEmpleados(_nivel, _idEmpleado));   // Gestión Empleados
         }
         private void button8_Click(object sender, EventArgs e) 
         {

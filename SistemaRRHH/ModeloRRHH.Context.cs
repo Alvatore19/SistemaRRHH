@@ -31,5 +31,6 @@ namespace SistemaRRHH
         public virtual DbSet<HistorialSalarial> HistorialSalarial { get; set; }
         public virtual DbSet<SolicitudPermiso> SolicitudPermiso { get; set; }
         public virtual DbSet<BoletaPago> BoletaPago { get; set; }
+        public virtual DbSet<SolicitudDespido> SolicitudDespido { get; set; }
     }
 }

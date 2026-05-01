@@ -133,6 +133,9 @@
     <Compile Include="NodoEmpleado.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SolicitudDespido.cs">
+      <DependentUpon>ModeloRRHH.tt</DependentUpon>
+    </Compile>
     <Compile Include="SolicitudPermiso.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>

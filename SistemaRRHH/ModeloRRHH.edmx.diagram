@@ -17,6 +17,9 @@
         <AssociationConnector Association="SistemaRRHHModel.FK_Permiso_Empleado" ManuallyRouted="false" />
         <EntityTypeShape EntityType="SistemaRRHHModel.BoletaPago" Width="1.5" PointX="5.25" PointY="11.5" />
         <AssociationConnector Association="SistemaRRHHModel.FK_Boleta_Empleado" />
+        <EntityTypeShape EntityType="SistemaRRHHModel.SolicitudDespido" Width="1.5" PointX="5.25" PointY="15.5" />
+        <AssociationConnector Association="SistemaRRHHModel.FK_Despido_Empleado" />
+        <AssociationConnector Association="SistemaRRHHModel.FK_Despido_Solicitante" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
