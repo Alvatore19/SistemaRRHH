@@ -323,6 +323,7 @@
             this.btnEliminar.Text = "Procesar / Solicitar Despido";
             this.btnEliminar.UseVisualStyleBackColor = false;
             this.btnEliminar.Click += new System.EventHandler(this.btnEliminar_Click);
+
             // --- GRUPO: ACTUALIZAR DATOS ---
             this.groupBox3.BackColor = System.Drawing.Color.White;
             this.groupBox3.Controls.Add(this.textBox1); // DUI
@@ -365,10 +366,11 @@
             // Escala y DUI
             this.lblEscala.AutoSize = true; this.lblEscala.Location = new System.Drawing.Point(10, 115); this.lblEscala.Text = "Escala:"; this.lblEscala.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.cmbEscalaSalarial.Location = new System.Drawing.Point(70, 112); this.cmbEscalaSalarial.Size = new System.Drawing.Size(100, 23); this.cmbEscalaSalarial.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.cmbEscalaSalarial.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList; // No permite escribir a mano
-
+            this.cmbEscalaSalarial.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            
             this.label16.AutoSize = true; this.label16.Location = new System.Drawing.Point(180, 115); this.label16.Text = "DUI:"; this.label16.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.textBox1.Location = new System.Drawing.Point(215, 112); this.textBox1.Size = new System.Drawing.Size(110, 23); this.textBox1.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.textBox1.ReadOnly = true; 
 
             // Justificación
             this.lblMotivoAumento.AutoSize = true; this.lblMotivoAumento.Location = new System.Drawing.Point(10, 145); this.lblMotivoAumento.Text = "Justificar:"; this.lblMotivoAumento.Font = new System.Drawing.Font("Segoe UI", 9F);

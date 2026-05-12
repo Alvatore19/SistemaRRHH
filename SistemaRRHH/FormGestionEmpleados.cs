@@ -464,7 +464,6 @@ namespace SistemaRRHH
                 db.Empleado.Add(nuevoEmpBD);
                 db.SaveChanges();
 
-                // --- 3. INSERCIÓN EN EL ÁRBOL (RAM) ---
                 NodoEmpleado nuevoNodoArbol = new NodoEmpleado(
                     nuevoId,
                     txtDui.Text,
@@ -506,8 +505,8 @@ namespace SistemaRRHH
 
                 txtActualizarNombre.Text = empSeleccionado.Nombre;
                 txtActualizarCargo.Text = empSeleccionado.Puesto;
+                textBox1.Text = empSeleccionado.Dui;
 
-                // --- NUEVA LÓGICA: CARGAR LAS ESCALAS DESDE LA BD ---
                 cmbEscalaSalarial.Items.Clear();
                 using (var db = new SistemaRRHHEntities())
                 {
@@ -546,6 +545,7 @@ namespace SistemaRRHH
                 txtActualizarCargo.Clear();
                 cmbEscalaSalarial.Items.Clear();
                 txtMotivoAumento.Clear();
+                textBox1.Clear(); 
                 cmbActualizarJefe.SelectedIndex = -1;
 
                 txtActualizarNombre.Enabled = false;
@@ -567,7 +567,6 @@ namespace SistemaRRHH
                 return;
             }
 
-            // --- NUEVA LÓGICA: VALIDAR JUSTIFICACIÓN DE AUMENTO ---
             if (cmbEscalaSalarial.SelectedIndex > 0 && string.IsNullOrWhiteSpace(txtMotivoAumento.Text))
             {
                 MessageBox.Show("Si asigna una Escala Salarial superior a la base, DEBE escribir una justificación del aumento (Ej. Ascenso, Antigüedad).", "Justificación Requerida", MessageBoxButtons.OK, MessageBoxIcon.Warning);
