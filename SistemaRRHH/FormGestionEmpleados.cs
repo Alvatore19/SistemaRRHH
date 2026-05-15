@@ -143,18 +143,15 @@ namespace SistemaRRHH
             {
                 using (var db = new SistemaRRHHEntities())
                 {
-                    // 1. Obtener todos los empleados activos con su cargo (una sola consulta)
-                    var empleadosBD = db.Empleado
-                        .Include("Cargo")
-                        .Where(e => e.EstadoActivo == true)
-                        .ToList();
-
-                    // 2. Crear un diccionario para acceder a cada nodo por su ID
-                    var nodosPorId = new Dictionary<string, NodoEmpleado>();
+                    var empleadosBD = db.Empleado.Include("Cargo")
+                                                 .Where(e => e.EstadoActivo == true)
+                                                 .OrderBy(e => e.Cargo.NivelJerarquico)
+                                                 .ToList();
 
                     foreach (var emp in empleadosBD)
                     {
-                        var nodo = new NodoEmpleado(
+                        // Reconstruimos el nodo en la RAM
+                        NodoEmpleado nuevoNodo = new NodoEmpleado(
                             emp.IdEmpleado,
                             emp.DocumentoLegal,
                             emp.NombreCompleto,
@@ -163,49 +160,35 @@ namespace SistemaRRHH
                             emp.CorreoElectronico,
                             emp.Contrasena
                         );
-                        nodosPorId[emp.IdEmpleado] = nodo;
-                    }
 
-                    // 3. Construir las relaciones padre-hijo usando el diccionario
-                    NodoEmpleado raiz = null;
-
-                    foreach (var emp in empleadosBD)
-                    {
-                        var nodoActual = nodosPorId[emp.IdEmpleado];
-
+                        // Si no tiene jefe, es la Raíz (El Director General)
                         if (string.IsNullOrEmpty(emp.IdJefe))
                         {
-                            // Es la raíz (Director General)
-                            raiz = nodoActual;
+                            miEmpresa.Raiz = nuevoNodo;
                         }
                         else
                         {
-                            // Buscar al jefe en el diccionario (instantáneo)
-                            if (nodosPorId.TryGetValue(emp.IdJefe, out var jefe))
-                            {
-                                nodoActual.Jefe = jefe;
-                                jefe.Subalternos.Add(nodoActual);
-                            }
+                            // Si tiene jefe, lo insertamos buscando al jefe en el árbol
+                            miEmpresa.Insertar(nuevoNodo, emp.IdJefe);
                         }
+
+                        listaTodosLosEmpleados.Add(nuevoNodo);
                     }
 
-                    // 4. Asignar la raíz y la lista completa
-                    miEmpresa.Raiz = raiz;
-                    listaTodosLosEmpleados = nodosPorId.Values.ToList();
+                    // Actualizamos el contador para que el próximo ID no choque con los existentes
+                    // Si hay 5 empleados, el contador iniciará en 6 para crear "EMP-6"
                     contadorEmpleados = listaTodosLosEmpleados.Count + 1;
                 }
 
-                // 5. Actualizar la interfaz (combos, tablas, gráficos)
+                // Refrescamos las tablas, los combobox y mandamos a pintar los gráficos
                 ActualizarComboBoxes();
                 panelArbol.Invalidate();
                 panelStats.Invalidate();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al cargar la estructura: " + ex.Message);
+                MessageBox.Show("Error al cargar la estructura organizacional: " + ex.Message);
             }
-
-
         }
 
         private void CargarAprobacionesDataGrid()
@@ -967,28 +950,6 @@ namespace SistemaRRHH
             }
         }
 
-
-        private void btnZoomIn_Click(object sender, EventArgs e)
-        {
-            factorZoom = Math.Min(factorZoom + ZOOM_STEP, ZOOM_MAX);
-            panelArbol.Invalidate();
-            ActualizarLabelZoom();
-        }
-
-        private void btnZoomOut_Click(object sender, EventArgs e)
-        {
-            factorZoom = Math.Max(factorZoom - ZOOM_STEP, ZOOM_MIN);
-            panelArbol.Invalidate();
-            ActualizarLabelZoom();
-        }
-
-        private void btnZoomReset_Click(object sender, EventArgs e)
-        {
-            factorZoom = 1.0f;
-            panelArbol.AutoScrollPosition = Point.Empty;
-            panelArbol.Invalidate();
-            ActualizarLabelZoom();
-        }
 
         private void ActualizarLabelZoom()
         {
