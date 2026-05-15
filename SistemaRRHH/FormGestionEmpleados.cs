@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -19,6 +20,12 @@ namespace SistemaRRHH
         string rolUsuarioActual;
         string idUsuarioActual;
         int contadorEmpleados = 1;
+        // Variables para el zoom
+        private float factorZoom = 1.0f;
+        private const float ZOOM_MIN = 0.3f;
+        private const float ZOOM_MAX = 2.5f;
+        private const float ZOOM_STEP = 0.1f;
+        private PointF puntoCentroZoom = PointF.Empty;
 
         public FormGestionEmpleados(string nivelUsuario, string idEmpleadoLogueado)
         {
@@ -35,9 +42,10 @@ namespace SistemaRRHH
             btnEliminar.Enabled = false;
             cmbNuevoJefe.Enabled = false;
 
+            panelArbol.Resize += panelArbol_Resize;
             panelArbol.AutoScroll = true;
-            // Creamos un lienzo virtual muy grande (ej. 3000 x 2000 píxeles)
-            panelArbol.AutoScrollMinSize = new System.Drawing.Size(3000, 2000);
+            panelArbol.MouseWheel += PanelArbol_MouseWheel;
+            ActualizarLabelZoom();
 
             // Controles de Actualizar apagados por defecto
             txtActualizarNombre.Enabled = false;
@@ -91,6 +99,14 @@ namespace SistemaRRHH
 
             // ¡EL ESLABÓN PERDIDO! (Responde a tus preguntas 3 y 4)
             CargarEmpleadosDesdeBD();
+
+            panelArbol.GetType().GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(panelArbol, true);
+            panelStats.GetType().GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(panelStats, true);
+        }
+
+        private void panelArbol_Resize(object sender, EventArgs e)
+        {
+            panelArbol.Invalidate(); // Fuerza el repintado con las nuevas dimensiones
         }
 
         // --- MÉTODOS PARA LLENAR LOS DATAGRIDVIEW ---
@@ -127,15 +143,18 @@ namespace SistemaRRHH
             {
                 using (var db = new SistemaRRHHEntities())
                 {
-                    var empleadosBD = db.Empleado.Include("Cargo")
-                                                 .Where(e => e.EstadoActivo == true)
-                                                 .OrderBy(e => e.Cargo.NivelJerarquico)
-                                                 .ToList();
+                    // 1. Obtener todos los empleados activos con su cargo (una sola consulta)
+                    var empleadosBD = db.Empleado
+                        .Include("Cargo")
+                        .Where(e => e.EstadoActivo == true)
+                        .ToList();
+
+                    // 2. Crear un diccionario para acceder a cada nodo por su ID
+                    var nodosPorId = new Dictionary<string, NodoEmpleado>();
 
                     foreach (var emp in empleadosBD)
                     {
-                        // Reconstruimos el nodo en la RAM
-                        NodoEmpleado nuevoNodo = new NodoEmpleado(
+                        var nodo = new NodoEmpleado(
                             emp.IdEmpleado,
                             emp.DocumentoLegal,
                             emp.NombreCompleto,
@@ -144,35 +163,49 @@ namespace SistemaRRHH
                             emp.CorreoElectronico,
                             emp.Contrasena
                         );
+                        nodosPorId[emp.IdEmpleado] = nodo;
+                    }
 
-                        // Si no tiene jefe, es la Raíz (El Director General)
+                    // 3. Construir las relaciones padre-hijo usando el diccionario
+                    NodoEmpleado raiz = null;
+
+                    foreach (var emp in empleadosBD)
+                    {
+                        var nodoActual = nodosPorId[emp.IdEmpleado];
+
                         if (string.IsNullOrEmpty(emp.IdJefe))
                         {
-                            miEmpresa.Raiz = nuevoNodo;
+                            // Es la raíz (Director General)
+                            raiz = nodoActual;
                         }
                         else
                         {
-                            // Si tiene jefe, lo insertamos buscando al jefe en el árbol
-                            miEmpresa.Insertar(nuevoNodo, emp.IdJefe);
+                            // Buscar al jefe en el diccionario (instantáneo)
+                            if (nodosPorId.TryGetValue(emp.IdJefe, out var jefe))
+                            {
+                                nodoActual.Jefe = jefe;
+                                jefe.Subalternos.Add(nodoActual);
+                            }
                         }
-
-                        listaTodosLosEmpleados.Add(nuevoNodo);
                     }
 
-                    // Actualizamos el contador para que el próximo ID no choque con los existentes
-                    // Si hay 5 empleados, el contador iniciará en 6 para crear "EMP-6"
+                    // 4. Asignar la raíz y la lista completa
+                    miEmpresa.Raiz = raiz;
+                    listaTodosLosEmpleados = nodosPorId.Values.ToList();
                     contadorEmpleados = listaTodosLosEmpleados.Count + 1;
                 }
 
-                // Refrescamos las tablas, los combobox y mandamos a pintar los gráficos
+                // 5. Actualizar la interfaz (combos, tablas, gráficos)
                 ActualizarComboBoxes();
                 panelArbol.Invalidate();
                 panelStats.Invalidate();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al cargar la estructura organizacional: " + ex.Message);
+                MessageBox.Show("Error al cargar la estructura: " + ex.Message);
             }
+
+
         }
 
         private void CargarAprobacionesDataGrid()
@@ -613,61 +646,168 @@ namespace SistemaRRHH
             }
         }
 
+
         private void panelArbol_Paint(object sender, PaintEventArgs e)
         {
-            if (miEmpresa.Raiz != null)
-            {
-                Graphics lienzo = e.Graphics;
-                lienzo.TranslateTransform(panelArbol.AutoScrollPosition.X, panelArbol.AutoScrollPosition.Y);
-                int xInicial = 3000 / 2;
-                int yInicial = 40;
+            if (miEmpresa.Raiz == null) return;
 
-                DibujarNodo(miEmpresa.Raiz, xInicial, yInicial, lienzo, 3000); // Pasamos 3000 como espacio
-            }
+            Graphics lienzo = e.Graphics;
+            lienzo.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+            lienzo.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+
+            // 1. Calcular el espacio TOTAL que necesita el árbol (sin zoom)
+            Size espacioNecesario = CalcularEspacioArbol(miEmpresa.Raiz, 0);
+
+            // 2. Ajustar el AutoScrollMinSize considerando el zoom
+            panelArbol.AutoScrollMinSize = new Size(
+                (int)(Math.Max(espacioNecesario.Width + 40, panelArbol.ClientSize.Width) * factorZoom),
+                (int)(Math.Max(espacioNecesario.Height + 40, panelArbol.ClientSize.Height) * factorZoom)
+            );
+
+            // 3. Aplicar la traslación del scroll y el zoom
+            lienzo.TranslateTransform(panelArbol.AutoScrollPosition.X, panelArbol.AutoScrollPosition.Y);
+            lienzo.ScaleTransform(factorZoom, factorZoom);
+
+            // 4. Usar el ancho del árbol calculado o el del panel (el que sea mayor)
+            int anchoDibujo = Math.Max(espacioNecesario.Width, panelArbol.ClientSize.Width - 20);
+
+            // Posición inicial: centro-arriba del área de dibujo
+            int xInicial = anchoDibujo / 2;
+            int yInicial = 20;
+
+            // Dibujar el árbol adaptado al espacio calculado
+            DibujarNodoAdaptable(miEmpresa.Raiz, xInicial, yInicial, lienzo, anchoDibujo, espacioNecesario.Height + 40, 0);
+
+            // Resetear transformaciones para dibujar UI
+            lienzo.ResetTransform();
+
         }
 
-        private void DibujarNodo(NodoEmpleado nodo, int x, int y, Graphics lienzo, int espacioDisponible)
+        // Calcula el espacio total que ocupará el árbol (ancho y alto)
+        private Size CalcularEspacioArbol(NodoEmpleado nodo, int nivel)
         {
-            int anchoTarjeta = 110;
-            int altoTarjeta = 45;
+            int anchoTarjeta = Math.Min(120, 200); // Ancho fijo por tarjeta
+            int altoTarjeta = 50;
+            int margenVertical = 80;
 
-            int rectX = x - (anchoTarjeta / 2);
-            int rectY = y - (altoTarjeta / 2);
+            if (nodo.Subalternos.Count == 0)
+            {
+                // Hoja: solo ocupa su tarjeta
+                return new Size(anchoTarjeta + 40, altoTarjeta + 20);
+            }
+
+            int anchoTotalHijos = 0;
+            int altoMaximoHijo = 0;
+
+            foreach (var hijo in nodo.Subalternos)
+            {
+                Size espacioHijo = CalcularEspacioArbol(hijo, nivel + 1);
+                anchoTotalHijos += espacioHijo.Width;
+                altoMaximoHijo = Math.Max(altoMaximoHijo, espacioHijo.Height);
+            }
+
+            int anchoNecesario = Math.Max(anchoTarjeta + 40, anchoTotalHijos);
+            int altoNecesario = altoTarjeta + margenVertical + altoMaximoHijo;
+
+            return new Size(anchoNecesario, altoNecesario);
+        }
+
+
+        private void DibujarNodoAdaptable(NodoEmpleado nodo, int x, int y, Graphics lienzo,
+                                           int espacioDisponible, int altoPanel, int nivel)
+        {
+            // Tamaño de la tarjeta ajustable
+            int anchoTarjeta = Math.Min(130, Math.Max(100, espacioDisponible / 4));
+            int altoTarjeta = 50;
+
+            // Margen vertical entre niveles
+            int margenVertical = 80;
+
+            // Ajustamos para que no se salga del área de dibujo
+            int rectX = Math.Max(10, x - (anchoTarjeta / 2));
+            int rectY = y;
+
             Rectangle rectNode = new Rectangle(rectX, rectY, anchoTarjeta, altoTarjeta);
 
-            lienzo.FillRectangle(Brushes.LightBlue, rectNode);
-            lienzo.DrawRectangle(Pens.Black, rectNode);
+            // Dibujamos la tarjeta con color que varía según el nivel
+            Color colorFondo;
+            switch (nivel)
+            {
+                case 0: colorFondo = Color.LightSteelBlue; break;
+                case 1: colorFondo = Color.LightBlue; break;
+                case 2: colorFondo = Color.LightCyan; break;
+                default: colorFondo = Color.LightGray; break;
+            }
 
-            Font fuente = this.Font;
-            string textoMostrar = $"{nodo.Nombre}\n{nodo.Puesto}\n";
+            using (Brush fondo = new SolidBrush(colorFondo))
+            using (Pen borde = new Pen(Color.Black, 1))
+            {
+                lienzo.FillRectangle(fondo, rectNode);
+                lienzo.DrawRectangle(borde, rectNode);
+            }
 
-            StringFormat formatoCentrado = new StringFormat();
-            formatoCentrado.Alignment = StringAlignment.Center;
-            formatoCentrado.LineAlignment = StringAlignment.Center;
-            lienzo.DrawString(textoMostrar, fuente, Brushes.Black, rectNode, formatoCentrado);
+            // Texto dentro de la tarjeta - FUENTE MÁS PEQUEÑA para que quepa
+            string textoMostrar = $"{nodo.Nombre}\n{nodo.Puesto}";
 
+            // Calculamos el tamaño de fuente según el nivel y espacio
+            float tamanoFuente = Math.Max(6.5f, 10f - nivel * 1.2f);
+
+            using (Font fuente = new Font("Segoe UI", tamanoFuente, FontStyle.Regular))
+            using (StringFormat formatoCentrado = new StringFormat())
+            {
+                formatoCentrado.Alignment = StringAlignment.Center;
+                formatoCentrado.LineAlignment = StringAlignment.Center;
+
+                // Medir si el texto cabe en la tarjeta
+                SizeF tamanoTexto = lienzo.MeasureString(textoMostrar, fuente, anchoTarjeta);
+
+                // Si no cabe, reducimos aún más la fuente
+                if (tamanoTexto.Height > altoTarjeta || tamanoTexto.Width > anchoTarjeta)
+                {
+                    float factorEscala = Math.Min(altoTarjeta / tamanoTexto.Height, anchoTarjeta / tamanoTexto.Width);
+                    using (Font fuenteReducida = new Font("Segoe UI", tamanoFuente * factorEscala * 0.9f, FontStyle.Regular))
+                    {
+                        lienzo.DrawString(textoMostrar, fuenteReducida, Brushes.Black, rectNode, formatoCentrado);
+                    }
+                }
+                else
+                {
+                    lienzo.DrawString(textoMostrar, fuente, Brushes.Black, rectNode, formatoCentrado);
+                }
+            }
+
+            // Dibujar hijos (SIN RESTRICCIÓN DE ESPACIO - el scroll se encarga)
             int cantidadHijos = nodo.Subalternos.Count;
             if (cantidadHijos > 0)
             {
-                int anchoPorHijo = espacioDisponible / cantidadHijos;
-                int xHijo = x - (espacioDisponible / 2) + (anchoPorHijo / 2);
-                int yHijo = y + 100;
+                // Calculamos el espacio para cada hijo
+                int espacioPorHijo = Math.Max(espacioDisponible / cantidadHijos, anchoTarjeta + 20);
+                int xInicialHijos = x - ((espacioPorHijo * cantidadHijos) / 2) + (espacioPorHijo / 2);
+                int yHijos = y + altoTarjeta + margenVertical;
 
-                foreach (NodoEmpleado subalterno in nodo.Subalternos)
+                for (int i = 0; i < cantidadHijos; i++)
                 {
+                    NodoEmpleado hijo = nodo.Subalternos[i];
+                    int xHijo = xInicialHijos + (i * espacioPorHijo);
+
+                    // Línea conectora
                     int parentBottomX = x;
-                    int parentBottomY = y + (altoTarjeta / 2);
-
+                    int parentBottomY = y + altoTarjeta;
                     int childTopX = xHijo;
-                    int childTopY = yHijo - (altoTarjeta / 2);
+                    int childTopY = yHijos;
 
-                    lienzo.DrawLine(Pens.Black, parentBottomX, parentBottomY, childTopX, childTopY);
-                    DibujarNodo(subalterno, xHijo, yHijo, lienzo, anchoPorHijo);
+                    using (Pen linea = new Pen(Color.Gray, 1))
+                    {
+                        lienzo.DrawLine(linea, parentBottomX, parentBottomY, childTopX, childTopY);
+                    }
 
-                    xHijo += anchoPorHijo;
+                    // Dibujar hijo recursivamente
+                    DibujarNodoAdaptable(hijo, xHijo, yHijos, lienzo,
+                                        espacioPorHijo, altoPanel, nivel + 1);
                 }
             }
         }
+
 
         private void panelStats_Paint(object sender, PaintEventArgs e)
         {
@@ -743,7 +883,68 @@ namespace SistemaRRHH
             }
         }
 
-       private void cmbEliminar_SelectedIndexChanged_1(object sender, EventArgs e)
+        private void PanelArbol_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (ModifierKeys.HasFlag(Keys.Control))
+            {
+                // Zoom con Ctrl + Rueda del mouse
+                float zoomAnterior = factorZoom;
+
+                if (e.Delta > 0)
+                    factorZoom = Math.Min(factorZoom + ZOOM_STEP, ZOOM_MAX);
+                else if (e.Delta < 0)
+                    factorZoom = Math.Max(factorZoom - ZOOM_STEP, ZOOM_MIN);
+
+                // Ajustar el scroll para mantener el punto bajo el cursor
+                if (zoomAnterior != factorZoom)
+                {
+                    Point mousePos = panelArbol.PointToClient(Cursor.Position);
+
+                    float relacionZoom = factorZoom / zoomAnterior;
+
+                    // Ajustar la posición del scroll para el efecto de zoom centrado
+                    panelArbol.AutoScrollPosition = new Point(
+                        (int)((mousePos.X + Math.Abs(panelArbol.AutoScrollPosition.X)) * relacionZoom - mousePos.X),
+                        (int)((mousePos.Y + Math.Abs(panelArbol.AutoScrollPosition.Y)) * relacionZoom - mousePos.Y)
+                    );
+
+                    panelArbol.Invalidate();
+                    ActualizarLabelZoom();
+                }
+            }
+        }
+
+        // Método para mostrar el nivel de zoom actual (opcional)
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == (Keys.Control | Keys.Oemplus) || keyData == (Keys.Control | Keys.Add))
+            {
+                factorZoom = Math.Min(factorZoom + ZOOM_STEP, ZOOM_MAX);
+                panelArbol.Invalidate();
+                ActualizarLabelZoom();
+                return true;
+            }
+            else if (keyData == (Keys.Control | Keys.OemMinus) || keyData == (Keys.Control | Keys.Subtract))
+            {
+                factorZoom = Math.Max(factorZoom - ZOOM_STEP, ZOOM_MIN);
+                panelArbol.Invalidate();
+                ActualizarLabelZoom();
+                return true;
+            }
+            else if (keyData == (Keys.Control | Keys.D0))
+            {
+                // Ctrl + 0 = Reset zoom
+                factorZoom = 1.0f;
+                panelArbol.AutoScrollPosition = Point.Empty;
+                panelArbol.Invalidate();
+                ActualizarLabelZoom();
+                return true;
+            }
+
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private void cmbEliminar_SelectedIndexChanged_1(object sender, EventArgs e)
         {
             if (cmbEliminar.SelectedIndex != -1)
             {
@@ -765,5 +966,38 @@ namespace SistemaRRHH
                 cmbNuevoJefe.SelectedIndex = -1;
             }
         }
+
+
+        private void btnZoomIn_Click(object sender, EventArgs e)
+        {
+            factorZoom = Math.Min(factorZoom + ZOOM_STEP, ZOOM_MAX);
+            panelArbol.Invalidate();
+            ActualizarLabelZoom();
+        }
+
+        private void btnZoomOut_Click(object sender, EventArgs e)
+        {
+            factorZoom = Math.Max(factorZoom - ZOOM_STEP, ZOOM_MIN);
+            panelArbol.Invalidate();
+            ActualizarLabelZoom();
+        }
+
+        private void btnZoomReset_Click(object sender, EventArgs e)
+        {
+            factorZoom = 1.0f;
+            panelArbol.AutoScrollPosition = Point.Empty;
+            panelArbol.Invalidate();
+            ActualizarLabelZoom();
+        }
+
+        private void ActualizarLabelZoom()
+        {
+            if (lblZoom != null)
+            {
+                lblZoom.Text = $"🔍 {factorZoom * 100:F0}%";
+                // Opcional: tooltip con instrucciones
+            }
+        }
+
     }
 }
