@@ -17,6 +17,25 @@ namespace SistemaRRHH
             Raiz = null;
         }
 
+
+        // Dentro de AN_Jerarquia
+        public List<NodoEmpleado> ObtenerTodosLosNodos()
+        {
+            List<NodoEmpleado> lista = new List<NodoEmpleado>();
+            Recorrer(Raiz, lista);
+            return lista;
+        }
+
+
+
+        private void Recorrer(NodoEmpleado nodo, List<NodoEmpleado> lista)
+        {
+            if (nodo == null) return;
+            lista.Add(nodo);
+            foreach (NodoEmpleado hijo in nodo.Subalternos)
+                Recorrer(hijo, lista);
+        }
+
         // Método recursivo para buscar un nodo por su ID
         public NodoEmpleado Buscar(string idBuscado, NodoEmpleado nodoActual)
         {

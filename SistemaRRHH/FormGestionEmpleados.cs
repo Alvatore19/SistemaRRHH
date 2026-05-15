@@ -13,13 +13,15 @@ namespace SistemaRRHH
 {
     public partial class FormGestionEmpleados : Form
     {
-        AN_Jerarquia miEmpresa = new AN_Jerarquia();
 
-        List<NodoEmpleado> listaTodosLosEmpleados = new List<NodoEmpleado>();
+        AN_Jerarquia miEmpresa = new AN_Jerarquia();
 
         string rolUsuarioActual;
         string idUsuarioActual;
-        int contadorEmpleados = 1;
+        private int proximoIdNumerico;
+        private Size tamañoArbolCache = Size.Empty;   // Almacena el tamaño calculado
+
+
         // Variables para el zoom
         private float factorZoom = 1.0f;
         private const float ZOOM_MIN = 0.3f;
@@ -30,13 +32,12 @@ namespace SistemaRRHH
         public FormGestionEmpleados(string nivelUsuario, string idEmpleadoLogueado)
         {
             InitializeComponent();
+            InicializarContador();
 
-            // Asignamos la sesión real que viene del Login/Dashboard
             idUsuarioActual = idEmpleadoLogueado;
-
-            // Basado en tu SQL: Nivel 1 = Director, Nivel 2 = Analista
             rolUsuarioActual = (nivelUsuario == "1") ? "Director General" : "Analista de RRHH";
 
+            // Eventos y configuración de controles
             panelArbol.Paint += panelArbol_Paint;
             panelStats.Paint += panelStats_Paint;
             btnEliminar.Enabled = false;
@@ -47,13 +48,12 @@ namespace SistemaRRHH
             panelArbol.MouseWheel += PanelArbol_MouseWheel;
             ActualizarLabelZoom();
 
-            // Controles de Actualizar apagados por defecto
             txtActualizarNombre.Enabled = false;
             txtActualizarCargo.Enabled = false;
             cmbActualizarJefe.Enabled = false;
             btnActualizar.Enabled = false;
 
-            // Cargar cargos en el ComboBox
+            // Cargar cargos en ComboBox
             try
             {
                 using (var db = new SistemaRRHHEntities())
@@ -73,33 +73,25 @@ namespace SistemaRRHH
             txtDui.MaxLength = 10;
             txtDui.KeyPress += txtDui_KeyPress;
 
-            // Configurar buscador inteligente
+            // Configurar buscadores inteligentes
             cmbActualizarSeleccion.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             cmbActualizarSeleccion.AutoCompleteSource = AutoCompleteSource.ListItems;
             cmbEliminar.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             cmbEliminar.AutoCompleteSource = AutoCompleteSource.ListItems;
 
-            // 🛡️ Ocultar la pestaña de aprobaciones si NO es el Director General
-            if (rolUsuarioActual != "Director General")
+            // === CONFIGURACIÓN DE INTERFAZ SEGÚN ROL (sin redundancias) ===
+            if (rolUsuarioActual != "Director General") // Es Analista
             {
                 tabControlVistas.TabPages.Remove(tabAprobaciones);
                 btnEliminar.Text = "Solicitar Despido (Requiere Aprobación)";
                 btnEliminar.BackColor = Color.DarkOrange;
             }
+            // Si es Director, la pestaña de aprobaciones ya está visible y el botón de eliminar tiene su texto/color por defecto
 
-            // Cargar tablas de datos (Excel style)
-            CargarDirectorioDataGrid();
-            if (rolUsuarioActual == "Director General") CargarAprobacionesDataGrid();
-            if (rolUsuarioActual != "Director General")
-            {
-                tabControlVistas.TabPages.Remove(tabAprobaciones);
-                btnEliminar.Text = "Solicitar Despido (Requiere Aprobación)";
-                btnEliminar.BackColor = Color.DarkOrange;
-            }
-
-            // ¡EL ESLABÓN PERDIDO! (Responde a tus preguntas 3 y 4)
+            // Cargar empleados (dentro de este método se llama a RefrescarUIArbol, que ya actualizará aprobaciones si es Director)
             CargarEmpleadosDesdeBD();
 
+            // Activar doble buffer para reducir parpadeos
             panelArbol.GetType().GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(panelArbol, true);
             panelStats.GetType().GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(panelStats, true);
         }
@@ -109,32 +101,61 @@ namespace SistemaRRHH
             panelArbol.Invalidate(); // Fuerza el repintado con las nuevas dimensiones
         }
 
-        // --- MÉTODOS PARA LLENAR LOS DATAGRIDVIEW ---
-        private void CargarDirectorioDataGrid()
+
+        private void InicializarContador()
         {
             try
             {
                 using (var db = new SistemaRRHHEntities())
                 {
-                    var directorio = (from e in db.Empleado
-                                      join c in db.Cargo on e.IdCargo equals c.IdCargo
-                                      join j in db.Empleado on e.IdJefe equals j.IdEmpleado into jefes
-                                      from jefe in jefes.DefaultIfEmpty() // Left Join
-                                      where e.EstadoActivo == true
-                                      select new
-                                      {
-                                          Código = e.IdEmpleado,
-                                          Nombre = e.NombreCompleto,
-                                          DUI = e.DocumentoLegal,
-                                          Cargo = c.NombreRol,
-                                          Jefe_Inmediato = jefe != null ? jefe.NombreCompleto : "N/A (Cúspide)",
-                                          Sueldo = c.SalarioBase
-                                      }).ToList();
+                    int maxNum = db.Empleado
+                        .Where(e => e.IdEmpleado.StartsWith("EMP-"))
+                        .Select(e => e.IdEmpleado)
+                        .AsEnumerable()          // Ahora trabajamos en memoria
+                        .Select(id => int.TryParse(id.Substring(4), out int num) ? num : 0)
+                        .DefaultIfEmpty(0)
+                        .Max();
 
-                    dgvEmpleados.DataSource = directorio;
+                    proximoIdNumerico = maxNum + 1;
                 }
             }
-            catch (Exception ex) { Console.WriteLine("Error al cargar directorio: " + ex.Message); }
+            catch
+            {
+                proximoIdNumerico = 1;
+            }
+        }
+
+        private void RefrescarUIArbol(bool forzarRedibujo = true)
+        {
+            List<NodoEmpleado> todos = miEmpresa.ObtenerTodosLosNodos();
+            ActualizarComboBoxes(todos);
+            CargarDirectorioDataGrid(todos);
+            if (rolUsuarioActual == "Director General")
+                CargarAprobacionesDataGrid();
+
+            if (forzarRedibujo)
+            {
+                RecalcularTamañoArbol();   // ← actualiza el tamaño antes de redibujar
+                panelArbol.Invalidate();
+                panelStats.Invalidate();
+            }
+        }
+
+        // --- MÉTODOS PARA LLENAR LOS DATAGRIDVIEW ---
+        private void CargarDirectorioDataGrid(List<NodoEmpleado> todosLosNodos)
+        {
+            var directorio = todosLosNodos.Select(emp => new
+            {
+                Código = emp.Id,
+                Nombre = emp.Nombre,
+                DUI = emp.Dui,
+                Cargo = emp.Puesto,
+                Jefe_Inmediato = emp.Jefe != null ? emp.Jefe.Nombre : "N/A (Cúspide)",
+                Sueldo = emp.Sueldo
+            }).ToList();
+
+            dgvEmpleados.DataSource = null;
+            dgvEmpleados.DataSource = directorio;
         }
 
         private void CargarEmpleadosDesdeBD()
@@ -143,15 +164,18 @@ namespace SistemaRRHH
             {
                 using (var db = new SistemaRRHHEntities())
                 {
-                    var empleadosBD = db.Empleado.Include("Cargo")
-                                                 .Where(e => e.EstadoActivo == true)
-                                                 .OrderBy(e => e.Cargo.NivelJerarquico)
-                                                 .ToList();
+                    var empleadosBD = db.Empleado
+                        .Include("Cargo")
+                        .Where(e => e.EstadoActivo == true)
+                        .ToList(); // Traemos todos
 
+                    // Diccionario temporal para búsqueda O(1) - SOLO DURANTE LA CARGA
+                    var nodosDict = new Dictionary<string, NodoEmpleado>();
+
+                    // Paso 1: Crear todos los nodos sin enlazar
                     foreach (var emp in empleadosBD)
                     {
-                        // Reconstruimos el nodo en la RAM
-                        NodoEmpleado nuevoNodo = new NodoEmpleado(
+                        var nodo = new NodoEmpleado(
                             emp.IdEmpleado,
                             emp.DocumentoLegal,
                             emp.NombreCompleto,
@@ -160,36 +184,42 @@ namespace SistemaRRHH
                             emp.CorreoElectronico,
                             emp.Contrasena
                         );
-
-                        // Si no tiene jefe, es la Raíz (El Director General)
-                        if (string.IsNullOrEmpty(emp.IdJefe))
-                        {
-                            miEmpresa.Raiz = nuevoNodo;
-                        }
-                        else
-                        {
-                            // Si tiene jefe, lo insertamos buscando al jefe en el árbol
-                            miEmpresa.Insertar(nuevoNodo, emp.IdJefe);
-                        }
-
-                        listaTodosLosEmpleados.Add(nuevoNodo);
+                        nodosDict[emp.IdEmpleado] = nodo;
                     }
 
-                    // Actualizamos el contador para que el próximo ID no choque con los existentes
-                    // Si hay 5 empleados, el contador iniciará en 6 para crear "EMP-6"
-                    contadorEmpleados = listaTodosLosEmpleados.Count + 1;
+                    // Paso 2: Enlazar cada nodo con su jefe (usando el diccionario)
+                    NodoEmpleado raiz = null;
+                    foreach (var emp in empleadosBD)
+                    {
+                        NodoEmpleado nodoActual = nodosDict[emp.IdEmpleado];
+                        if (string.IsNullOrEmpty(emp.IdJefe))
+                        {
+                            raiz = nodoActual;
+                        }
+                        else if (nodosDict.TryGetValue(emp.IdJefe, out NodoEmpleado jefe))
+                        {
+                            nodoActual.Jefe = jefe;
+                            jefe.Subalternos.Add(nodoActual);
+                        }
+                        // Si no se encuentra el jefe (inconsistencia en BD), se omite o se loguea
+                    }
+
+                    miEmpresa.Raiz = raiz;
                 }
 
-                // Refrescamos las tablas, los combobox y mandamos a pintar los gráficos
-                ActualizarComboBoxes();
-                panelArbol.Invalidate();
-                panelStats.Invalidate();
+                RefrescarUIArbol(true);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error al cargar la estructura organizacional: " + ex.Message);
             }
         }
+
+        private int ObtenerSiguienteContador()
+        {
+            return proximoIdNumerico++;
+        }
+
 
         private void CargarAprobacionesDataGrid()
         {
@@ -218,22 +248,27 @@ namespace SistemaRRHH
             catch (Exception ex) { Console.WriteLine("Error al cargar aprobaciones: " + ex.Message); }
         }
 
-        private void ActualizarComboBoxes()
+        private void ActualizarComboBoxes(List<NodoEmpleado> todosLosNodos)
         {
-            cmbJefe.DataSource = null; cmbEliminar.DataSource = null; cmbNuevoJefe.DataSource = null;
-            cmbActualizarSeleccion.DataSource = null; cmbActualizarJefe.DataSource = null;
+            cmbJefe.DataSource = null;
+            cmbJefe.DataSource = new List<NodoEmpleado>(todosLosNodos);
+            cmbJefe.SelectedIndex = -1;
 
-            cmbJefe.DataSource = new List<NodoEmpleado>(listaTodosLosEmpleados);
-            cmbEliminar.DataSource = new List<NodoEmpleado>(listaTodosLosEmpleados);
-            cmbNuevoJefe.DataSource = new List<NodoEmpleado>(listaTodosLosEmpleados);
-            cmbActualizarSeleccion.DataSource = new List<NodoEmpleado>(listaTodosLosEmpleados);
-            cmbActualizarJefe.DataSource = new List<NodoEmpleado>(listaTodosLosEmpleados);
+            cmbEliminar.DataSource = null;
+            cmbEliminar.DataSource = new List<NodoEmpleado>(todosLosNodos);
+            cmbEliminar.SelectedIndex = -1;
 
-            cmbJefe.SelectedIndex = -1; cmbEliminar.SelectedIndex = -1; cmbNuevoJefe.SelectedIndex = -1;
-            cmbActualizarSeleccion.SelectedIndex = -1; cmbActualizarJefe.SelectedIndex = -1;
+            cmbNuevoJefe.DataSource = null;
+            cmbNuevoJefe.DataSource = new List<NodoEmpleado>(todosLosNodos);
+            cmbNuevoJefe.SelectedIndex = -1;
 
-            CargarDirectorioDataGrid();
-            if (rolUsuarioActual == "Director General") CargarAprobacionesDataGrid();
+            cmbActualizarSeleccion.DataSource = null;
+            cmbActualizarSeleccion.DataSource = new List<NodoEmpleado>(todosLosNodos);
+            cmbActualizarSeleccion.SelectedIndex = -1;
+
+            cmbActualizarJefe.DataSource = null;
+            cmbActualizarJefe.DataSource = new List<NodoEmpleado>(todosLosNodos);
+            cmbActualizarJefe.SelectedIndex = -1;
         }
 
         private void btnEliminar_Click(object sender, EventArgs e)
@@ -286,8 +321,6 @@ namespace SistemaRRHH
                     }
 
                     miEmpresa.EliminarConReasignacion(nodoAEliminar.Id, idNuevoJefe);
-                    listaTodosLosEmpleados.RemoveAll(emp => emp.Id == nodoAEliminar.Id);
-
                     MessageBox.Show("Despido procesado inmediatamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
@@ -310,8 +343,7 @@ namespace SistemaRRHH
                 }
 
                 txtMotivoDespido.Clear();
-                ActualizarComboBoxes();
-                panelArbol.Invalidate(); panelStats.Invalidate();
+                RefrescarUIArbol(true);
             }
         }
 
@@ -346,12 +378,11 @@ namespace SistemaRRHH
             }
 
             // 3. Actualizar memoria RAM y UI
+
             miEmpresa.EliminarConReasignacion(idADespedir, idNuevoJefe);
-            listaTodosLosEmpleados.RemoveAll(emp => emp.Id == idADespedir);
 
             MessageBox.Show("Despido Aprobado y Ejecutado.");
-            ActualizarComboBoxes();
-            panelArbol.Invalidate(); panelStats.Invalidate();
+            RefrescarUIArbol(true);
         }
 
         private void btnRechazarDespido_Click(object sender, EventArgs e)
@@ -408,13 +439,14 @@ namespace SistemaRRHH
                 txtUsername.Focus(); return;
             }
 
-            if (listaTodosLosEmpleados.Count > 0 && cmbJefe.SelectedIndex == -1)
+            if (miEmpresa.Raiz != null && cmbJefe.SelectedIndex == -1)
             {
-                MessageBox.Show("Debe seleccionar un jefe para el nuevo empleado.", "Jefe Obligatorio", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Debe seleccionar un jefe para el nuevo empleado.", "Jefe Obligatorio",
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            string nuevoId = "EMP-" + contadorEmpleados.ToString();
+            string nuevoId = "EMP-" + ObtenerSiguienteContador();
             string correoIngresado = txtUsername.Text.Trim();
             Cargo cargoSeleccionado = (Cargo)cmbCargo.SelectedItem;
             string nombreCargo = cargoSeleccionado.NombreRol;
@@ -495,16 +527,14 @@ namespace SistemaRRHH
                 else
                     miEmpresa.Insertar(nuevoNodoArbol, idJefeSQL);
 
-                listaTodosLosEmpleados.Add(nuevoNodoArbol);
                 AN_Jerarquia.EnviarConfirmacion(nuevoNodoArbol, nombreJefePasaMetodo);
             }
 
-            contadorEmpleados++;
-            ActualizarComboBoxes();
+            RefrescarUIArbol(true);
+
             MessageBox.Show("Empleado registrado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             txtNombre.Clear(); txtDui.Clear(); txtUsername.Clear(); txtPassword.Clear();
-            panelArbol.Invalidate(); panelStats.Invalidate();
         }
 
         private void cmbActualizarSeleccion_SelectedIndexChanged(object sender, EventArgs e)
@@ -612,7 +642,10 @@ namespace SistemaRRHH
 
                         var cargoBD = db.Cargo.FirstOrDefault(c => c.NombreRol == txtActualizarCargo.Text);
                         if (cargoBD != null) empBD.IdCargo = cargoBD.IdCargo;
-                        if (idNuevoJefe != null) empBD.IdJefe = idNuevoJefe;
+                        if (idNuevoJefe != null)
+                        {
+                            empBD.IdJefe = idNuevoJefe;
+                        }
 
                         db.SaveChanges();
                     }
@@ -620,8 +653,7 @@ namespace SistemaRRHH
 
                 MessageBox.Show("Datos y Escala Salarial actualizados correctamente en el sistema.");
                 txtMotivoAumento.Clear();
-                ActualizarComboBoxes();
-                panelArbol.Invalidate(); panelStats.Invalidate();
+                RefrescarUIArbol(true);
             }
             else
             {
@@ -634,36 +666,33 @@ namespace SistemaRRHH
         {
             if (miEmpresa.Raiz == null) return;
 
+            // Usar el tamaño ya calculado (se actualiza al modificar el árbol)
+            Size espacioNecesario = tamañoArbolCache;
+
             Graphics lienzo = e.Graphics;
             lienzo.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
             lienzo.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
 
-            // 1. Calcular el espacio TOTAL que necesita el árbol (sin zoom)
-            Size espacioNecesario = CalcularEspacioArbol(miEmpresa.Raiz, 0);
-
-            // 2. Ajustar el AutoScrollMinSize considerando el zoom
+            // Ajustar el AutoScrollMinSize considerando el zoom
             panelArbol.AutoScrollMinSize = new Size(
                 (int)(Math.Max(espacioNecesario.Width + 40, panelArbol.ClientSize.Width) * factorZoom),
                 (int)(Math.Max(espacioNecesario.Height + 40, panelArbol.ClientSize.Height) * factorZoom)
             );
 
-            // 3. Aplicar la traslación del scroll y el zoom
+            // Aplicar transformaciones de scroll y zoom
             lienzo.TranslateTransform(panelArbol.AutoScrollPosition.X, panelArbol.AutoScrollPosition.Y);
             lienzo.ScaleTransform(factorZoom, factorZoom);
 
-            // 4. Usar el ancho del árbol calculado o el del panel (el que sea mayor)
+            // Calcular ancho de dibujo y posición inicial
             int anchoDibujo = Math.Max(espacioNecesario.Width, panelArbol.ClientSize.Width - 20);
-
-            // Posición inicial: centro-arriba del área de dibujo
             int xInicial = anchoDibujo / 2;
             int yInicial = 20;
 
-            // Dibujar el árbol adaptado al espacio calculado
+            // Dibujar el árbol
             DibujarNodoAdaptable(miEmpresa.Raiz, xInicial, yInicial, lienzo, anchoDibujo, espacioNecesario.Height + 40, 0);
 
-            // Resetear transformaciones para dibujar UI
+            // Resetear transformaciones
             lienzo.ResetTransform();
-
         }
 
         // Calcula el espacio total que ocupará el árbol (ancho y alto)
@@ -821,7 +850,6 @@ namespace SistemaRRHH
             float anguloInicio = 0f;
             int leyendaY = 30;
 
-            lienzo.DrawString("Distribución por Departamentos", new Font(this.Font, FontStyle.Bold), Brushes.Black, 10, 5);
 
             for (int i = 0; i < cantidades.Count; i++)
             {
@@ -950,7 +978,6 @@ namespace SistemaRRHH
             }
         }
 
-
         private void ActualizarLabelZoom()
         {
             if (lblZoom != null)
@@ -959,6 +986,15 @@ namespace SistemaRRHH
                 // Opcional: tooltip con instrucciones
             }
         }
+
+        private void RecalcularTamañoArbol()
+        {
+            if (miEmpresa.Raiz == null)
+                tamañoArbolCache = Size.Empty;
+            else
+                tamañoArbolCache = CalcularEspacioArbol(miEmpresa.Raiz, 0);
+        }
+
 
     }
 }

@@ -110,7 +110,7 @@
             this.grup.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
             this.grup.Location = new System.Drawing.Point(10, 10);
             this.grup.Name = "grup";
-            this.grup.Size = new System.Drawing.Size(340, 235);
+            this.grup.Size = new System.Drawing.Size(340, 229);
             this.grup.TabIndex = 2;
             this.grup.TabStop = false;
             this.grup.Text = "✨ Nuevo Empleado";
@@ -210,10 +210,11 @@
             this.btnIngresarEmpleado.BackColor = System.Drawing.Color.MediumSeaGreen;
             this.btnIngresarEmpleado.FlatAppearance.BorderSize = 0;
             this.btnIngresarEmpleado.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnIngresarEmpleado.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.btnIngresarEmpleado.ForeColor = System.Drawing.Color.White;
-            this.btnIngresarEmpleado.Location = new System.Drawing.Point(10, 200);
+            this.btnIngresarEmpleado.Location = new System.Drawing.Point(0, 199);
             this.btnIngresarEmpleado.Name = "btnIngresarEmpleado";
-            this.btnIngresarEmpleado.Size = new System.Drawing.Size(315, 25);
+            this.btnIngresarEmpleado.Size = new System.Drawing.Size(340, 30);
             this.btnIngresarEmpleado.TabIndex = 12;
             this.btnIngresarEmpleado.Text = "Ingresar Empleado";
             this.btnIngresarEmpleado.UseVisualStyleBackColor = false;
@@ -250,7 +251,7 @@
             this.groupBox2.Controls.Add(this.txtMotivoDespido);
             this.groupBox2.Controls.Add(this.btnEliminar);
             this.groupBox2.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
-            this.groupBox2.Location = new System.Drawing.Point(10, 450);
+            this.groupBox2.Location = new System.Drawing.Point(10, 451);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(340, 150);
             this.groupBox2.TabIndex = 4;
@@ -307,9 +308,9 @@
             // txtMotivoDespido
             // 
             this.txtMotivoDespido.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtMotivoDespido.Location = new System.Drawing.Point(70, 82);
+            this.txtMotivoDespido.Location = new System.Drawing.Point(130, 82);
             this.txtMotivoDespido.Name = "txtMotivoDespido";
-            this.txtMotivoDespido.Size = new System.Drawing.Size(255, 26);
+            this.txtMotivoDespido.Size = new System.Drawing.Size(195, 26);
             this.txtMotivoDespido.TabIndex = 5;
             // 
             // btnEliminar
@@ -317,10 +318,11 @@
             this.btnEliminar.BackColor = System.Drawing.Color.Firebrick;
             this.btnEliminar.FlatAppearance.BorderSize = 0;
             this.btnEliminar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnEliminar.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.btnEliminar.ForeColor = System.Drawing.Color.White;
-            this.btnEliminar.Location = new System.Drawing.Point(10, 115);
+            this.btnEliminar.Location = new System.Drawing.Point(2, 123);
             this.btnEliminar.Name = "btnEliminar";
-            this.btnEliminar.Size = new System.Drawing.Size(315, 25);
+            this.btnEliminar.Size = new System.Drawing.Size(338, 27);
             this.btnEliminar.TabIndex = 6;
             this.btnEliminar.Text = "Procesar / Solicitar Despido";
             this.btnEliminar.UseVisualStyleBackColor = false;
@@ -347,7 +349,7 @@
             this.groupBox3.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
             this.groupBox3.Location = new System.Drawing.Point(10, 245);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(340, 230);
+            this.groupBox3.Size = new System.Drawing.Size(340, 199);
             this.groupBox3.TabIndex = 5;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "✏️ Actualizar Datos y Escala";
@@ -376,10 +378,11 @@
             this.btnActualizar.BackColor = System.Drawing.Color.DodgerBlue;
             this.btnActualizar.FlatAppearance.BorderSize = 0;
             this.btnActualizar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnActualizar.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.btnActualizar.ForeColor = System.Drawing.Color.White;
-            this.btnActualizar.Location = new System.Drawing.Point(10, 185);
+            this.btnActualizar.Location = new System.Drawing.Point(0, 175);
             this.btnActualizar.Name = "btnActualizar";
-            this.btnActualizar.Size = new System.Drawing.Size(315, 25);
+            this.btnActualizar.Size = new System.Drawing.Size(340, 25);
             this.btnActualizar.TabIndex = 2;
             this.btnActualizar.Text = "Guardar Cambios de Empleado";
             this.btnActualizar.UseVisualStyleBackColor = false;
@@ -568,25 +571,26 @@
             this.dgvSolicitudes.Location = new System.Drawing.Point(3, 3);
             this.dgvSolicitudes.Name = "dgvSolicitudes";
             this.dgvSolicitudes.RowHeadersWidth = 47;
-            this.dgvSolicitudes.Size = new System.Drawing.Size(696, 263);
+            this.dgvSolicitudes.Size = new System.Drawing.Size(696, 299);
             this.dgvSolicitudes.TabIndex = 0;
             // 
             // panelAprobacionAcciones
             // 
+            this.panelAprobacionAcciones.BackColor = System.Drawing.Color.WhiteSmoke;
             this.panelAprobacionAcciones.Controls.Add(this.lblMotivoRechazo);
             this.panelAprobacionAcciones.Controls.Add(this.txtMotivoRechazo);
             this.panelAprobacionAcciones.Controls.Add(this.btnAprobarDespido);
             this.panelAprobacionAcciones.Controls.Add(this.btnRechazarDespido);
             this.panelAprobacionAcciones.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelAprobacionAcciones.Location = new System.Drawing.Point(3, 266);
+            this.panelAprobacionAcciones.Location = new System.Drawing.Point(3, 302);
             this.panelAprobacionAcciones.Name = "panelAprobacionAcciones";
-            this.panelAprobacionAcciones.Size = new System.Drawing.Size(696, 80);
+            this.panelAprobacionAcciones.Size = new System.Drawing.Size(696, 44);
             this.panelAprobacionAcciones.TabIndex = 1;
             // 
             // lblMotivoRechazo
             // 
             this.lblMotivoRechazo.AutoSize = true;
-            this.lblMotivoRechazo.Location = new System.Drawing.Point(10, 10);
+            this.lblMotivoRechazo.Location = new System.Drawing.Point(10, 11);
             this.lblMotivoRechazo.Name = "lblMotivoRechazo";
             this.lblMotivoRechazo.Size = new System.Drawing.Size(145, 19);
             this.lblMotivoRechazo.TabIndex = 0;
@@ -594,9 +598,9 @@
             // 
             // txtMotivoRechazo
             // 
-            this.txtMotivoRechazo.Location = new System.Drawing.Point(10, 30);
+            this.txtMotivoRechazo.Location = new System.Drawing.Point(161, 8);
             this.txtMotivoRechazo.Name = "txtMotivoRechazo";
-            this.txtMotivoRechazo.Size = new System.Drawing.Size(350, 26);
+            this.txtMotivoRechazo.Size = new System.Drawing.Size(311, 26);
             this.txtMotivoRechazo.TabIndex = 1;
             // 
             // btnAprobarDespido
@@ -604,9 +608,9 @@
             this.btnAprobarDespido.BackColor = System.Drawing.Color.MediumSeaGreen;
             this.btnAprobarDespido.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAprobarDespido.ForeColor = System.Drawing.Color.White;
-            this.btnAprobarDespido.Location = new System.Drawing.Point(380, 28);
+            this.btnAprobarDespido.Location = new System.Drawing.Point(478, 7);
             this.btnAprobarDespido.Name = "btnAprobarDespido";
-            this.btnAprobarDespido.Size = new System.Drawing.Size(140, 25);
+            this.btnAprobarDespido.Size = new System.Drawing.Size(97, 28);
             this.btnAprobarDespido.TabIndex = 2;
             this.btnAprobarDespido.Text = "✅ Aprobar Despido";
             this.btnAprobarDespido.UseVisualStyleBackColor = false;
@@ -617,9 +621,9 @@
             this.btnRechazarDespido.BackColor = System.Drawing.Color.OrangeRed;
             this.btnRechazarDespido.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnRechazarDespido.ForeColor = System.Drawing.Color.White;
-            this.btnRechazarDespido.Location = new System.Drawing.Point(530, 28);
+            this.btnRechazarDespido.Location = new System.Drawing.Point(581, 7);
             this.btnRechazarDespido.Name = "btnRechazarDespido";
-            this.btnRechazarDespido.Size = new System.Drawing.Size(140, 25);
+            this.btnRechazarDespido.Size = new System.Drawing.Size(103, 28);
             this.btnRechazarDespido.TabIndex = 3;
             this.btnRechazarDespido.Text = "❌ Denegar Solicitud";
             this.btnRechazarDespido.UseVisualStyleBackColor = false;
@@ -642,7 +646,7 @@
             this.groupBox5.Size = new System.Drawing.Size(710, 180);
             this.groupBox5.TabIndex = 7;
             this.groupBox5.TabStop = false;
-            this.groupBox5.Text = "📊 Estadísticas Organizacionales";
+            this.groupBox5.Text = "📊 Estadísticas por Departamentos";
             // 
             // lblZoom
             // 
