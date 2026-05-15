@@ -47,6 +47,7 @@ namespace SistemaRRHH
             this.btnLogin = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.btnLostPass = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
@@ -59,7 +60,7 @@ namespace SistemaRRHH
             this.labelDUI.ForeColor = System.Drawing.Color.Black;
             this.labelDUI.Location = new System.Drawing.Point(443, 105);
             this.labelDUI.Name = "labelDUI";
-            this.labelDUI.Size = new System.Drawing.Size(55, 25);
+            this.labelDUI.Size = new System.Drawing.Size(49, 24);
             this.labelDUI.TabIndex = 0;
             this.labelDUI.Text = "DUI:";
             // 
@@ -69,7 +70,7 @@ namespace SistemaRRHH
             this.labelPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelPassword.Location = new System.Drawing.Point(443, 173);
             this.labelPassword.Name = "labelPassword";
-            this.labelPassword.Size = new System.Drawing.Size(131, 25);
+            this.labelPassword.Size = new System.Drawing.Size(122, 24);
             this.labelPassword.TabIndex = 2;
             this.labelPassword.Text = "Contraseña:";
             // 
@@ -77,14 +78,14 @@ namespace SistemaRRHH
             // 
             this.txtDUI.Location = new System.Drawing.Point(444, 133);
             this.txtDUI.Name = "txtDUI";
-            this.txtDUI.Size = new System.Drawing.Size(260, 22);
+            this.txtDUI.Size = new System.Drawing.Size(260, 20);
             this.txtDUI.TabIndex = 1;
             // 
             // txtPassword
             // 
             this.txtPassword.Location = new System.Drawing.Point(447, 201);
             this.txtPassword.Name = "txtPassword";
-            this.txtPassword.Size = new System.Drawing.Size(260, 22);
+            this.txtPassword.Size = new System.Drawing.Size(260, 20);
             this.txtPassword.TabIndex = 3;
             this.txtPassword.UseSystemPasswordChar = true;
             this.txtPassword.TextChanged += new System.EventHandler(this.txtPassword_TextChanged);
@@ -134,10 +135,24 @@ namespace SistemaRRHH
             this.pictureBox2.TabIndex = 7;
             this.pictureBox2.TabStop = false;
             // 
-            // Login
+            // btnLostPass
+            // 
+            this.btnLostPass.BackColor = System.Drawing.SystemColors.Desktop;
+            this.btnLostPass.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.2F, System.Drawing.FontStyle.Bold);
+            this.btnLostPass.ForeColor = System.Drawing.SystemColors.Info;
+            this.btnLostPass.Location = new System.Drawing.Point(448, 289);
+            this.btnLostPass.Name = "btnLostPass";
+            this.btnLostPass.Size = new System.Drawing.Size(177, 31);
+            this.btnLostPass.TabIndex = 8;
+            this.btnLostPass.Text = "Olvide mi contraseña";
+            this.btnLostPass.UseVisualStyleBackColor = false;
+            this.btnLostPass.Click += new System.EventHandler(this.btnLostPass_Click);
+            // 
+            // FormLogin
             // 
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(789, 454);
+            this.Controls.Add(this.btnLostPass);
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.labelDUI);
             this.Controls.Add(this.txtDUI);
@@ -146,7 +161,7 @@ namespace SistemaRRHH
             this.Controls.Add(this.lblError);
             this.Controls.Add(this.btnLogin);
             this.Controls.Add(this.pictureBox1);
-            this.Name = "Login";
+            this.Name = "FormLogin";
             this.Text = "Login";
             this.Load += new System.EventHandler(this.Login_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
@@ -160,5 +175,6 @@ namespace SistemaRRHH
 
         private PictureBox pictureBox1;
         private PictureBox pictureBox2;
+        private Button btnLostPass;
     }
 }
