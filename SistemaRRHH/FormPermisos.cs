@@ -105,8 +105,7 @@ namespace SistemaRRHH
                         TipoPermiso = sol.TipoPermiso,
                         NivelPrioridad = sol.NivelPrioridad,
                         FechaSolicitud = sol.FechaSolicitud,
-                        CantidadTiempo = sol.CantidadTiempo,
-                        UnidadTiempo = sol.UnidadTiempo,
+                        CantidadHoras = sol.CantidadHoras, 
                         MotivoDetallado = sol.MotivoDetallado,
                         RutaComprobante = sol.RutaComprobante
                     };
@@ -186,7 +185,7 @@ namespace SistemaRRHH
                                         Tipo = s.TipoPermiso,
                                         Prioridad = s.NivelPrioridad,
                                         Fecha = s.FechaSolicitud,
-                                        Tiempo = s.CantidadTiempo + " " + s.UnidadTiempo,
+                                        Tiempo = s.CantidadHoras + " hrs", 
                                         Motivo = s.MotivoDetallado,
                                         Estado = s.EstadoAprobacion
                                     }).ToList();
@@ -230,8 +229,7 @@ namespace SistemaRRHH
                         NivelPrioridad = prioridad,
                         FechaSolicitud = DateTime.Now,
                         EstadoAprobacion = "Pendiente",
-                        CantidadTiempo = (int)numTiempoEmp.Value,
-                        UnidadTiempo = cmbUnidadEmp.Text,
+                        CantidadHoras = (decimal)numTiempoEmp.Value, // <--- ACTUALIZADO Y CASTEADO A DECIMAL
                         MotivoDetallado = txtMotivoEmp.Text,
                         RutaComprobante = null
                     };

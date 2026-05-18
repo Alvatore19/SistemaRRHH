@@ -20,10 +20,9 @@ namespace SistemaRRHH
         public int NivelPrioridad { get; set; }
         public System.DateTime FechaSolicitud { get; set; }
         public string EstadoAprobacion { get; set; }
-        public int CantidadTiempo { get; set; }
-        public string UnidadTiempo { get; set; }
         public string MotivoDetallado { get; set; }
         public string RutaComprobante { get; set; }
+        public decimal CantidadHoras { get; set; }
     
         public virtual Empleado Empleado { get; set; }
     }

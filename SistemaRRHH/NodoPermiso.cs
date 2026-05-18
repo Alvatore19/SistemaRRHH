@@ -13,8 +13,7 @@ namespace SistemaRRHH
         public string TipoPermiso { get; set; }
         public int NivelPrioridad { get; set; }
         public DateTime FechaSolicitud { get; set; }
-        public int CantidadTiempo { get; set; }
-        public string UnidadTiempo { get; set; }
+        public decimal CantidadHoras { get; set; }
         public string MotivoDetallado { get; set; }
         public string RutaComprobante { get; set; }
         public NodoPermiso Siguiente { get; set; }

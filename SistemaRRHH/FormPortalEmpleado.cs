@@ -66,7 +66,7 @@ namespace SistemaRRHH
                                     .OrderByDescending(s => s.FechaSolicitud)
                                     .Select(s => new {
                                         Tipo = s.TipoPermiso,
-                                        Tiempo = s.CantidadTiempo + " " + s.UnidadTiempo,
+                                        Tiempo = s.CantidadHoras + " hrs", 
                                         Motivo = s.MotivoDetallado,
                                         Estado = s.EstadoAprobacion
                                     }).ToList();

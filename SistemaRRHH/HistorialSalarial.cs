@@ -19,6 +19,7 @@ namespace SistemaRRHH
         public decimal Monto { get; set; }
         public string TipoModificacion { get; set; }
         public System.DateTime FechaAplicacion { get; set; }
+        public string MotivoJustificacion { get; set; }
     
         public virtual Empleado Empleado { get; set; }
     }

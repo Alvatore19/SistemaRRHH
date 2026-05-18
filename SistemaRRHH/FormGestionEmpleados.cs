@@ -19,8 +19,7 @@ namespace SistemaRRHH
         string rolUsuarioActual;
         string idUsuarioActual;
         private int proximoIdNumerico;
-        private Size tamañoArbolCache = Size.Empty;   // Almacena el tamaño calculado
-
+        private Size tamañoArbolCache = Size.Empty;   
 
         // Variables para el zoom
         private float factorZoom = 1.0f;
@@ -79,16 +78,15 @@ namespace SistemaRRHH
             cmbEliminar.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             cmbEliminar.AutoCompleteSource = AutoCompleteSource.ListItems;
 
-            // === CONFIGURACIÓN DE INTERFAZ SEGÚN ROL (sin redundancias) ===
+            // === CONFIGURACIÓN DE INTERFAZ SEGÚN ROL ===
             if (rolUsuarioActual != "Director General") // Es Analista
             {
                 tabControlVistas.TabPages.Remove(tabAprobaciones);
                 btnEliminar.Text = "Solicitar Despido (Requiere Aprobación)";
                 btnEliminar.BackColor = Color.DarkOrange;
             }
-            // Si es Director, la pestaña de aprobaciones ya está visible y el botón de eliminar tiene su texto/color por defecto
 
-            // Cargar empleados (dentro de este método se llama a RefrescarUIArbol, que ya actualizará aprobaciones si es Director)
+            // Cargar empleados 
             CargarEmpleadosDesdeBD();
 
             // Activar doble buffer para reducir parpadeos
@@ -98,9 +96,8 @@ namespace SistemaRRHH
 
         private void panelArbol_Resize(object sender, EventArgs e)
         {
-            panelArbol.Invalidate(); // Fuerza el repintado con las nuevas dimensiones
+            panelArbol.Invalidate(); 
         }
-
 
         private void InicializarContador()
         {
@@ -111,7 +108,7 @@ namespace SistemaRRHH
                     int maxNum = db.Empleado
                         .Where(e => e.IdEmpleado.StartsWith("EMP-"))
                         .Select(e => e.IdEmpleado)
-                        .AsEnumerable()          // Ahora trabajamos en memoria
+                        .AsEnumerable()          
                         .Select(id => int.TryParse(id.Substring(4), out int num) ? num : 0)
                         .DefaultIfEmpty(0)
                         .Max();
@@ -135,7 +132,7 @@ namespace SistemaRRHH
 
             if (forzarRedibujo)
             {
-                RecalcularTamañoArbol();   // ← actualiza el tamaño antes de redibujar
+                RecalcularTamañoArbol();   
                 panelArbol.Invalidate();
                 panelStats.Invalidate();
             }
@@ -167,11 +164,12 @@ namespace SistemaRRHH
                     var empleadosBD = db.Empleado
                         .Include("Cargo")
                         .Where(e => e.EstadoActivo == true)
-                        .ToList(); // Traemos todos
+                        .ToList(); 
 
                     // Diccionario temporal para búsqueda O(1) - SOLO DURANTE LA CARGA
                     var nodosDict = new Dictionary<string, NodoEmpleado>();
 
+                    // Paso 1: Crear todos los nodos sin enlazar
                     // Paso 1: Crear todos los nodos sin enlazar
                     foreach (var emp in empleadosBD)
                     {
@@ -180,8 +178,7 @@ namespace SistemaRRHH
                             emp.DocumentoLegal,
                             emp.NombreCompleto,
                             emp.Cargo.NombreRol,
-                            (double)emp.Cargo.SalarioBase,
-                            emp.CorreoElectronico,
+                            emp.SalarioActual > 0 ? (double)emp.SalarioActual : (double)emp.Cargo.SalarioBase, emp.CorreoElectronico,
                             emp.Contrasena
                         );
                         nodosDict[emp.IdEmpleado] = nodo;
@@ -201,7 +198,6 @@ namespace SistemaRRHH
                             nodoActual.Jefe = jefe;
                             jefe.Subalternos.Add(nodoActual);
                         }
-                        // Si no se encuentra el jefe (inconsistencia en BD), se omite o se loguea
                     }
 
                     miEmpresa.Raiz = raiz;
@@ -219,7 +215,6 @@ namespace SistemaRRHH
         {
             return proximoIdNumerico++;
         }
-
 
         private void CargarAprobacionesDataGrid()
         {
@@ -273,7 +268,12 @@ namespace SistemaRRHH
 
         private void btnEliminar_Click(object sender, EventArgs e)
         {
-            if (cmbEliminar.SelectedIndex == -1) return;
+            // Validación: Obligar a seleccionar un empleado
+            if (cmbEliminar.SelectedIndex == -1)
+            {
+                MessageBox.Show("Por favor, seleccione un empleado de la lista antes de procesar el despido.", "Selección Requerida", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
             NodoEmpleado nodoAEliminar = (NodoEmpleado)cmbEliminar.SelectedItem;
             string motivo = txtMotivoDespido.Text.Trim();
@@ -286,7 +286,8 @@ namespace SistemaRRHH
 
             if (nodoAEliminar == miEmpresa.Raiz && nodoAEliminar.Subalternos.Count > 0)
             {
-                MessageBox.Show("No puedes despedir al Director General activo."); return;
+                MessageBox.Show("No puedes despedir al Director General activo.", "Acción Denegada", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                return;
             }
 
             string idNuevoJefe = null;
@@ -304,46 +305,51 @@ namespace SistemaRRHH
                 idNuevoJefe = nuevoJefe.Id;
             }
 
-            // RAMIFICACIÓN SEGÚN EL ROL
-            using (var db = new SistemaRRHHEntities())
+            // Aplicación de Try-Catch para base de datos
+            try
             {
-                if (rolUsuarioActual == "Director General")
+                using (var db = new SistemaRRHHEntities())
                 {
-                    // DESPIDO DIRECTO (Modo Dios)
-                    var empBD = db.Empleado.FirstOrDefault(emp => emp.IdEmpleado == nodoAEliminar.Id);
-                    if (empBD != null)
+                    if (rolUsuarioActual == "Director General")
                     {
-                        var subalternosBD = db.Empleado.Where(emp => emp.IdJefe == nodoAEliminar.Id).ToList();
-                        foreach (var sub in subalternosBD) sub.IdJefe = idNuevoJefe;
+                        var empBD = db.Empleado.FirstOrDefault(emp => emp.IdEmpleado == nodoAEliminar.Id);
+                        if (empBD != null)
+                        {
+                            var subalternosBD = db.Empleado.Where(emp => emp.IdJefe == nodoAEliminar.Id).ToList();
+                            foreach (var sub in subalternosBD) sub.IdJefe = idNuevoJefe;
 
-                        db.Empleado.Remove(empBD);
+                            db.Empleado.Remove(empBD);
+                            db.SaveChanges();
+                        }
+
+                        miEmpresa.EliminarConReasignacion(nodoAEliminar.Id, idNuevoJefe);
+                        MessageBox.Show("Despido procesado inmediatamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        var nuevaSolicitud = new SolicitudDespido
+                        {
+                            IdSolicitante = idUsuarioActual,
+                            IdEmpleadoADespedir = nodoAEliminar.Id,
+                            IdNuevoJefeAsignado = idNuevoJefe,
+                            MotivoDespido = motivo,
+                            EstadoAprobacion = "Pendiente",
+                            FechaSolicitud = DateTime.Now
+                        };
+
+                        db.SolicitudDespido.Add(nuevaSolicitud);
                         db.SaveChanges();
+
+                        MessageBox.Show("La solicitud de despido ha sido enviada al Director General para su revisión.", "Enviado a Dirección", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                     }
 
-                    miEmpresa.EliminarConReasignacion(nodoAEliminar.Id, idNuevoJefe);
-                    MessageBox.Show("Despido procesado inmediatamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    txtMotivoDespido.Clear();
+                    RefrescarUIArbol(true);
                 }
-                else
-                {
-                    // SOLICITUD DE DESPIDO (Modo Analista)
-                    var nuevaSolicitud = new SolicitudDespido
-                    {
-                        IdSolicitante = idUsuarioActual,
-                        IdEmpleadoADespedir = nodoAEliminar.Id,
-                        IdNuevoJefeAsignado = idNuevoJefe,
-                        MotivoDespido = motivo,
-                        EstadoAprobacion = "Pendiente",
-                        FechaSolicitud = DateTime.Now
-                    };
-
-                    db.SolicitudDespido.Add(nuevaSolicitud);
-                    db.SaveChanges();
-
-                    MessageBox.Show("La solicitud de despido ha sido enviada al Director General para su revisión.", "Enviado a Dirección", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-                }
-
-                txtMotivoDespido.Clear();
-                RefrescarUIArbol(true);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ocurrió un error al procesar el despido en la base de datos: " + ex.Message, "Error Crítico", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -418,7 +424,6 @@ namespace SistemaRRHH
 
         private void btnIngresarEmpleado_Click(object sender, EventArgs e)
         {
-            // --- 1. VALIDACIONES DE CAMPOS OBLIGATORIOS ---
             if (string.IsNullOrWhiteSpace(txtNombre.Text) || cmbCargo.SelectedIndex == -1 ||
                 string.IsNullOrWhiteSpace(txtDui.Text) || string.IsNullOrWhiteSpace(txtUsername.Text) ||
                 string.IsNullOrWhiteSpace(txtPassword.Text))
@@ -441,100 +446,205 @@ namespace SistemaRRHH
 
             if (miEmpresa.Raiz != null && cmbJefe.SelectedIndex == -1)
             {
-                MessageBox.Show("Debe seleccionar un jefe para el nuevo empleado.", "Jefe Obligatorio",
-                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Debe seleccionar un jefe para el nuevo empleado.", "Jefe Obligatorio", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            string nuevoId = "EMP-" + ObtenerSiguienteContador();
-            string correoIngresado = txtUsername.Text.Trim();
-            Cargo cargoSeleccionado = (Cargo)cmbCargo.SelectedItem;
-            string nombreCargo = cargoSeleccionado.NombreRol;
-            int idCargoSQL = cargoSeleccionado.IdCargo;
-
-            // --- 2. VALIDACIÓN DE UNICIDAD Y GUARDADO EN SQL SERVER ---
-            using (var db = new SistemaRRHHEntities())
+            try
             {
-                if (db.Empleado.Any(emp => emp.DocumentoLegal == txtDui.Text))
-                {
-                    MessageBox.Show("Este número de DUI ya se encuentra registrado.", "DUI Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    txtDui.Focus(); return;
-                }
+                string nuevoId = "EMP-" + ObtenerSiguienteContador();
+                string correoIngresado = txtUsername.Text.Trim();
+                Cargo cargoSeleccionado = (Cargo)cmbCargo.SelectedItem;
+                string nombreCargo = cargoSeleccionado.NombreRol;
+                int idCargoSQL = cargoSeleccionado.IdCargo;
 
-                if (db.Empleado.Any(emp => emp.CorreoElectronico == correoIngresado))
+                using (var db = new SistemaRRHHEntities())
                 {
-                    MessageBox.Show("Este correo ya está asignado a otro empleado.", "Correo Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    txtUsername.Focus(); return;
-                }
-
-                // --- VALIDACIÓN DE LÍMITES DE CARGOS ---
-                if (nombreCargo == "Director General")
-                {
-                    int totalDirectores = db.Empleado.Count(emp => emp.IdCargo == idCargoSQL && emp.EstadoActivo == true);
-                    if (totalDirectores >= 1)
+                    if (db.Empleado.Any(emp => emp.DocumentoLegal == txtDui.Text))
                     {
-                        MessageBox.Show("La empresa ya cuenta con un Director General. Solo se permite 1 en toda la organización.", "Límite Jerárquico", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                        return;
+                        MessageBox.Show("Este número de DUI ya se encuentra registrado.", "DUI Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        txtDui.Focus(); return;
                     }
-                }
-                else if (nombreCargo == "Analista de RRHH")
-                {
-                    int totalAnalistas = db.Empleado.Count(emp => emp.IdCargo == idCargoSQL && emp.EstadoActivo == true);
-                    if (totalAnalistas >= 3)
+
+                    if (db.Empleado.Any(emp => emp.CorreoElectronico == correoIngresado))
                     {
-                        MessageBox.Show("Se ha alcanzado el límite máximo de 3 Analistas de Recursos Humanos.", "Límite de Personal", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                        return;
+                        MessageBox.Show("Este correo ya está asignado a otro empleado.", "Correo Duplicado", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        txtUsername.Focus(); return;
                     }
+
+                    if (nombreCargo == "Director General")
+                    {
+                        int totalDirectores = db.Empleado.Count(emp => emp.IdCargo == idCargoSQL && emp.EstadoActivo == true);
+                        if (totalDirectores >= 1)
+                        {
+                            MessageBox.Show("La empresa ya cuenta con un Director General. Solo se permite 1 en toda la organización.", "Límite Jerárquico", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                            return;
+                        }
+                    }
+                    else if (nombreCargo == "Analista de RRHH")
+                    {
+                        int totalAnalistas = db.Empleado.Count(emp => emp.IdCargo == idCargoSQL && emp.EstadoActivo == true);
+                        if (totalAnalistas >= 3)
+                        {
+                            MessageBox.Show("Se ha alcanzado el límite máximo de 3 Analistas de Recursos Humanos.", "Límite de Personal", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                            return;
+                        }
+                    }
+
+                    string idJefeSQL = null;
+                    string nombreJefePasaMetodo = "N/A (Director General)";
+
+                    if (cmbJefe.SelectedIndex != -1)
+                    {
+                        NodoEmpleado jefeSeleccionado = (NodoEmpleado)cmbJefe.SelectedItem;
+                        idJefeSQL = jefeSeleccionado.Id;
+                        nombreJefePasaMetodo = jefeSeleccionado.Nombre;
+                    }
+
+                    var nuevoEmpBD = new Empleado
+                    {
+                        IdEmpleado = nuevoId,
+                        IdCargo = idCargoSQL,
+                        IdJefe = idJefeSQL,
+                        NombreCompleto = txtNombre.Text,
+                        DocumentoLegal = txtDui.Text,
+                        EstadoActivo = true,
+                        Contrasena = txtPassword.Text,
+                        CorreoElectronico = correoIngresado,
+                        SalarioActual = cargoSeleccionado.SalarioBase
+                    };
+
+                    db.Empleado.Add(nuevoEmpBD);
+                    db.SaveChanges();
+
+                    NodoEmpleado nuevoNodoArbol = new NodoEmpleado(
+                        nuevoId,
+                        txtDui.Text,
+                        txtNombre.Text,
+                        nombreCargo,
+                        (double)cargoSeleccionado.SalarioBase,
+                        correoIngresado,
+                        txtPassword.Text
+                    );
+
+                    if (idJefeSQL == null)
+                        miEmpresa.Raiz = nuevoNodoArbol;
+                    else
+                        miEmpresa.Insertar(nuevoNodoArbol, idJefeSQL);
+
+                    AN_Jerarquia.EnviarConfirmacion(nuevoNodoArbol, nombreJefePasaMetodo);
                 }
 
-                string idJefeSQL = null;
-                string nombreJefePasaMetodo = "N/A (Director General)";
+                RefrescarUIArbol(true);
+                MessageBox.Show("Empleado registrado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                if (cmbJefe.SelectedIndex != -1)
-                {
-                    NodoEmpleado jefeSeleccionado = (NodoEmpleado)cmbJefe.SelectedItem;
-                    idJefeSQL = jefeSeleccionado.Id;
-                    nombreJefePasaMetodo = jefeSeleccionado.Nombre;
-                }
+                txtNombre.Clear(); txtDui.Clear(); txtUsername.Clear(); txtPassword.Clear(); cmbJefe.SelectedIndex = -1; cmbCargo.SelectedIndex = -1;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ocurrió un error al guardar el empleado: " + ex.Message, "Error Crítico", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
-                var nuevoEmpBD = new Empleado
-                {
-                    IdEmpleado = nuevoId,
-                    IdCargo = idCargoSQL,
-                    IdJefe = idJefeSQL,
-                    NombreCompleto = txtNombre.Text,
-                    DocumentoLegal = txtDui.Text,
-                    EstadoActivo = true,
-                    Contrasena = txtPassword.Text,
-                    CorreoElectronico = correoIngresado
-                };
-
-                db.Empleado.Add(nuevoEmpBD);
-                db.SaveChanges();
-
-                NodoEmpleado nuevoNodoArbol = new NodoEmpleado(
-                    nuevoId,
-                    txtDui.Text,
-                    txtNombre.Text,
-                    nombreCargo,
-                    (double)cargoSeleccionado.SalarioBase,
-                    correoIngresado,
-                    txtPassword.Text
-                );
-
-                if (idJefeSQL == null)
-                    miEmpresa.Raiz = nuevoNodoArbol;
-                else
-                    miEmpresa.Insertar(nuevoNodoArbol, idJefeSQL);
-
-                AN_Jerarquia.EnviarConfirmacion(nuevoNodoArbol, nombreJefePasaMetodo);
+        private void btnActualizar_Click(object sender, EventArgs e)
+        {
+            // Validación: Obligar a seleccionar un empleado
+            if (cmbActualizarSeleccion.SelectedIndex == -1)
+            {
+                MessageBox.Show("Por favor, busque y seleccione un empleado para actualizar sus datos.", "Selección Requerida", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
 
-            RefrescarUIArbol(true);
+            if (string.IsNullOrWhiteSpace(txtActualizarNombre.Text) || string.IsNullOrWhiteSpace(txtActualizarCargo.Text))
+            {
+                MessageBox.Show("Por favor, completa Nombre y Cargo.");
+                return;
+            }
 
-            MessageBox.Show("Empleado registrado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (cmbEscalaSalarial.SelectedIndex > 0 && string.IsNullOrWhiteSpace(txtMotivoAumento.Text))
+            {
+                MessageBox.Show("Si asigna una Escala Salarial superior a la base, DEBE escribir una justificación del aumento.", "Justificación Requerida", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtMotivoAumento.Focus();
+                return;
+            }
 
-            txtNombre.Clear(); txtDui.Clear(); txtUsername.Clear(); txtPassword.Clear();
+            NodoEmpleado empAEditar = (NodoEmpleado)cmbActualizarSeleccion.SelectedItem;
+            string idNuevoJefe = null;
+
+            if (cmbActualizarJefe.Enabled && cmbActualizarJefe.SelectedIndex != -1)
+            {
+                NodoEmpleado nuevoJefe = (NodoEmpleado)cmbActualizarJefe.SelectedItem;
+                idNuevoJefe = nuevoJefe.Id;
+            }
+
+            try
+            {
+                double salarioFinal = 0;
+                using (var db = new SistemaRRHHEntities())
+                {
+                    var cargoBD = db.Cargo.FirstOrDefault(c => c.NombreRol == txtActualizarCargo.Text);
+                    if (cargoBD != null)
+                    {
+                        switch (cmbEscalaSalarial.SelectedIndex)
+                        {
+                            case 0: salarioFinal = (double)cargoBD.SalarioBase; break;
+                            case 1: salarioFinal = (double)(cargoBD.SalarioBase + cargoBD.BonoEscala1); break;
+                            case 2: salarioFinal = (double)(cargoBD.SalarioBase + cargoBD.BonoEscala2); break;
+                            case 3: salarioFinal = (double)(cargoBD.SalarioBase + cargoBD.BonoEscala3); break;
+                        }
+                    }
+
+                    // Validación: Evitar que asigne exactamente el mismo sueldo/escala que ya tiene
+                    if (salarioFinal == empAEditar.Sueldo && empAEditar.Nombre == txtActualizarNombre.Text && empAEditar.Puesto == txtActualizarCargo.Text && ((empAEditar.Jefe != null && empAEditar.Jefe.Id == idNuevoJefe) || (empAEditar.Jefe == null && idNuevoJefe == null)))
+                    {
+                        MessageBox.Show("El empleado ya posee esta escala salarial y no se detectaron cambios en sus otros datos.", "Sin Cambios", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return;
+                    }
+
+                    bool exito = miEmpresa.ActualizarEmpleado(empAEditar.Id, txtActualizarNombre.Text, txtActualizarCargo.Text, salarioFinal, idNuevoJefe);
+
+                    if (exito)
+                    {
+                        var empBD = db.Empleado.FirstOrDefault(emp => emp.IdEmpleado == empAEditar.Id);
+                        if (empBD != null)
+                        {
+                            empBD.NombreCompleto = txtActualizarNombre.Text;
+
+                            if (cargoBD != null) empBD.IdCargo = cargoBD.IdCargo;
+                            if (idNuevoJefe != null) empBD.IdJefe = idNuevoJefe;
+
+                            empBD.SalarioActual = (decimal)salarioFinal;
+
+                            if (cmbEscalaSalarial.SelectedIndex > 0)
+                            {
+                                var nuevoHistorial = new HistorialSalarial
+                                {
+                                    IdEmpleado = empAEditar.Id,
+                                    Monto = (decimal)salarioFinal,
+                                    TipoModificacion = "Aumento por Escala " + cmbEscalaSalarial.SelectedIndex,
+                                    MotivoJustificacion = txtMotivoAumento.Text,
+                                    FechaAplicacion = DateTime.Now
+                                };
+                                db.HistorialSalarial.Add(nuevoHistorial);
+                            }
+
+                            db.SaveChanges();
+                        }
+
+                        MessageBox.Show("Datos y Escala Salarial actualizados correctamente en el sistema.", "Actualización Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        txtMotivoAumento.Clear();
+                        RefrescarUIArbol(true);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Error al actualizar la jerarquía. Verifica que el nuevo jefe sea válido y no genere ciclos.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ocurrió un error en la base de datos al actualizar: " + ex.Message, "Error Crítico", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void cmbActualizarSeleccion_SelectedIndexChanged(object sender, EventArgs e)
@@ -551,7 +661,7 @@ namespace SistemaRRHH
 
                 txtActualizarNombre.Text = empSeleccionado.Nombre;
                 txtActualizarCargo.Text = empSeleccionado.Puesto;
-                textBox1.Text = empSeleccionado.Dui;
+                textBox1.Text = empSeleccionado.Dui; 
 
                 cmbEscalaSalarial.Items.Clear();
                 using (var db = new SistemaRRHHEntities())
@@ -563,7 +673,7 @@ namespace SistemaRRHH
                         cmbEscalaSalarial.Items.Add($"Escala 1: ${cargoBD.SalarioBase + cargoBD.BonoEscala1}");
                         cmbEscalaSalarial.Items.Add($"Escala 2: ${cargoBD.SalarioBase + cargoBD.BonoEscala2}");
                         cmbEscalaSalarial.Items.Add($"Escala 3: ${cargoBD.SalarioBase + cargoBD.BonoEscala3}");
-                        cmbEscalaSalarial.SelectedIndex = 0; 
+                        cmbEscalaSalarial.SelectedIndex = 0;
                     }
                 }
 
@@ -592,6 +702,7 @@ namespace SistemaRRHH
                 cmbEscalaSalarial.Items.Clear();
                 txtMotivoAumento.Clear();
                 textBox1.Clear(); 
+
                 cmbActualizarJefe.SelectedIndex = -1;
 
                 txtActualizarNombre.Enabled = false;
@@ -602,65 +713,6 @@ namespace SistemaRRHH
                 btnActualizar.Enabled = false;
             }
         }
-
-        private void btnActualizar_Click(object sender, EventArgs e)
-        {
-            if (cmbActualizarSeleccion.SelectedIndex == -1) return;
-
-            if (string.IsNullOrWhiteSpace(txtActualizarNombre.Text) || string.IsNullOrWhiteSpace(txtActualizarCargo.Text))
-            {
-                MessageBox.Show("Por favor, completa Nombre y Cargo.");
-                return;
-            }
-
-            if (cmbEscalaSalarial.SelectedIndex > 0 && string.IsNullOrWhiteSpace(txtMotivoAumento.Text))
-            {
-                MessageBox.Show("Si asigna una Escala Salarial superior a la base, DEBE escribir una justificación del aumento (Ej. Ascenso, Antigüedad).", "Justificación Requerida", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtMotivoAumento.Focus();
-                return;
-            }
-
-            NodoEmpleado empAEditar = (NodoEmpleado)cmbActualizarSeleccion.SelectedItem;
-            string idNuevoJefe = null;
-
-            if (cmbActualizarJefe.Enabled && cmbActualizarJefe.SelectedIndex != -1)
-            {
-                NodoEmpleado nuevoJefe = (NodoEmpleado)cmbActualizarJefe.SelectedItem;
-                idNuevoJefe = nuevoJefe.Id;
-            }
-
-            bool exito = miEmpresa.ActualizarEmpleado(empAEditar.Id, txtActualizarNombre.Text, txtActualizarCargo.Text, 0, idNuevoJefe);
-
-            if (exito)
-            {
-                using (var db = new SistemaRRHHEntities())
-                {
-                    var empBD = db.Empleado.FirstOrDefault(emp => emp.IdEmpleado == empAEditar.Id);
-                    if (empBD != null)
-                    {
-                        empBD.NombreCompleto = txtActualizarNombre.Text;
-
-                        var cargoBD = db.Cargo.FirstOrDefault(c => c.NombreRol == txtActualizarCargo.Text);
-                        if (cargoBD != null) empBD.IdCargo = cargoBD.IdCargo;
-                        if (idNuevoJefe != null)
-                        {
-                            empBD.IdJefe = idNuevoJefe;
-                        }
-
-                        db.SaveChanges();
-                    }
-                }
-
-                MessageBox.Show("Datos y Escala Salarial actualizados correctamente en el sistema.");
-                txtMotivoAumento.Clear();
-                RefrescarUIArbol(true);
-            }
-            else
-            {
-                MessageBox.Show("Error al actualizar. Verifica que el nuevo jefe sea válido.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
 
         private void panelArbol_Paint(object sender, PaintEventArgs e)
         {
@@ -723,7 +775,6 @@ namespace SistemaRRHH
 
             return new Size(anchoNecesario, altoNecesario);
         }
-
 
         private void DibujarNodoAdaptable(NodoEmpleado nodo, int x, int y, Graphics lienzo,
                                            int espacioDisponible, int altoPanel, int nivel)
@@ -820,7 +871,6 @@ namespace SistemaRRHH
             }
         }
 
-
         private void panelStats_Paint(object sender, PaintEventArgs e)
         {
             Graphics lienzo = e.Graphics;
@@ -898,7 +948,6 @@ namespace SistemaRRHH
         {
             if (ModifierKeys.HasFlag(Keys.Control))
             {
-                // Zoom con Ctrl + Rueda del mouse
                 float zoomAnterior = factorZoom;
 
                 if (e.Delta > 0)
@@ -925,7 +974,6 @@ namespace SistemaRRHH
             }
         }
 
-        // Método para mostrar el nivel de zoom actual (opcional)
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if (keyData == (Keys.Control | Keys.Oemplus) || keyData == (Keys.Control | Keys.Add))
@@ -959,7 +1007,7 @@ namespace SistemaRRHH
         {
             if (cmbEliminar.SelectedIndex != -1)
             {
-                btnEliminar.Enabled = true; // <--- ¡AQUÍ ESTÁ LA SOLUCIÓN! ENCIENDE EL BOTÓN
+                btnEliminar.Enabled = true; 
 
                 NodoEmpleado empSeleccionado = (NodoEmpleado)cmbEliminar.SelectedItem;
                 if (empSeleccionado.Subalternos.Count > 0)
@@ -972,7 +1020,7 @@ namespace SistemaRRHH
             }
             else
             {
-                btnEliminar.Enabled = false; // <--- APAGA EL BOTÓN SI SE LIMPIA LA BÚSQUEDA
+                btnEliminar.Enabled = false; 
                 cmbNuevoJefe.Enabled = false;
                 cmbNuevoJefe.SelectedIndex = -1;
             }
@@ -983,7 +1031,6 @@ namespace SistemaRRHH
             if (lblZoom != null)
             {
                 lblZoom.Text = $"🔍 {factorZoom * 100:F0}%";
-                // Opcional: tooltip con instrucciones
             }
         }
 
@@ -994,7 +1041,5 @@ namespace SistemaRRHH
             else
                 tamañoArbolCache = CalcularEspacioArbol(miEmpresa.Raiz, 0);
         }
-
-
     }
 }

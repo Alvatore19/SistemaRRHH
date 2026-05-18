@@ -26,11 +26,11 @@ namespace SistemaRRHH
         }
     
         public virtual DbSet<Asistencia> Asistencia { get; set; }
+        public virtual DbSet<BoletaPago> BoletaPago { get; set; }
         public virtual DbSet<Cargo> Cargo { get; set; }
         public virtual DbSet<Empleado> Empleado { get; set; }
         public virtual DbSet<HistorialSalarial> HistorialSalarial { get; set; }
-        public virtual DbSet<SolicitudPermiso> SolicitudPermiso { get; set; }
-        public virtual DbSet<BoletaPago> BoletaPago { get; set; }
         public virtual DbSet<SolicitudDespido> SolicitudDespido { get; set; }
+        public virtual DbSet<SolicitudPermiso> SolicitudPermiso { get; set; }
     }
 }
