@@ -67,7 +67,7 @@ namespace SistemaRRHH
         // ==========================================
         private void CargarHistorialDirector()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var historialCompleto = db.SolicitudPermiso
                                           .Include("Empleado")
@@ -89,7 +89,7 @@ namespace SistemaRRHH
         private void CargarColaAnalista()
         {
             miColaPermisos = new ColaPrioridadPermisos();
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var pendientes = db.SolicitudPermiso
                                    .Include("Empleado")
@@ -158,7 +158,7 @@ namespace SistemaRRHH
             {
                 NodoPermiso procesado = miColaPermisos.Desencolar();
 
-                using (var db = new SistemaRRHHEntities())
+                using (var db = new SistemaRRHHEntities2())
                 {
                     var solicitudDb = db.SolicitudPermiso.Find(procesado.IdSolicitud);
                     solicitudDb.EstadoAprobacion = accion;
@@ -175,7 +175,7 @@ namespace SistemaRRHH
         // ==========================================
         private void CargarHistorialEmpleado()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var misPermisos = db.SolicitudPermiso
                                     .Where(s => s.IdEmpleado == _idEmpleadoActual)
@@ -220,7 +220,7 @@ namespace SistemaRRHH
 
             try
             {
-                using (var db = new SistemaRRHHEntities())
+                using (var db = new SistemaRRHHEntities2())
                 {
                     SolicitudPermiso nueva = new SolicitudPermiso
                     {
@@ -229,7 +229,7 @@ namespace SistemaRRHH
                         NivelPrioridad = prioridad,
                         FechaSolicitud = DateTime.Now,
                         EstadoAprobacion = "Pendiente",
-                        CantidadHoras = (decimal)numTiempoEmp.Value, // <--- ACTUALIZADO Y CASTEADO A DECIMAL
+                        CantidadHoras = (decimal)numTiempoEmp.Value, 
                         MotivoDetallado = txtMotivoEmp.Text,
                         RutaComprobante = null
                     };

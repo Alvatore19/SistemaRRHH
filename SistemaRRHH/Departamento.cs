@@ -12,25 +12,18 @@ namespace SistemaRRHH
     using System;
     using System.Collections.Generic;
     
-    public partial class Cargo
+    public partial class Departamento
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public Cargo()
+        public Departamento()
         {
-            this.Empleado = new HashSet<Empleado>();
+            this.Cargo = new HashSet<Cargo>();
         }
     
-        public int IdCargo { get; set; }
-        public string NombreRol { get; set; }
-        public int NivelJerarquico { get; set; }
-        public decimal SalarioBase { get; set; }
-        public decimal BonoEscala1 { get; set; }
-        public decimal BonoEscala2 { get; set; }
-        public decimal BonoEscala3 { get; set; }
-        public Nullable<int> IdDepartamento { get; set; }
+        public int IdDepartamento { get; set; }
+        public string NombreDepartamento { get; set; }
     
-        public virtual Departamento Departamento { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Empleado> Empleado { get; set; }
+        public virtual ICollection<Cargo> Cargo { get; set; }
     }
 }

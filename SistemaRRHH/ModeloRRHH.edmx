@@ -40,6 +40,14 @@
           <Property Name="BonoEscala1" Type="decimal" Precision="10" Scale="2" Nullable="false" />
           <Property Name="BonoEscala2" Type="decimal" Precision="10" Scale="2" Nullable="false" />
           <Property Name="BonoEscala3" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="IdDepartamento" Type="int" />
+        </EntityType>
+        <EntityType Name="Departamento">
+          <Key>
+            <PropertyRef Name="IdDepartamento" />
+          </Key>
+          <Property Name="IdDepartamento" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="NombreDepartamento" Type="varchar" MaxLength="100" Nullable="false" />
         </EntityType>
         <EntityType Name="Empleado">
           <Key>
@@ -118,6 +126,18 @@
             </Principal>
             <Dependent Role="BoletaPago">
               <PropertyRef Name="IdEmpleado" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Cargo_Departamento">
+          <End Role="Departamento" Type="Self.Departamento" Multiplicity="0..1" />
+          <End Role="Cargo" Type="Self.Cargo" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Departamento">
+              <PropertyRef Name="IdDepartamento" />
+            </Principal>
+            <Dependent Role="Cargo">
+              <PropertyRef Name="IdDepartamento" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -203,6 +223,7 @@
           <EntitySet Name="Asistencia" EntityType="Self.Asistencia" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="BoletaPago" EntityType="Self.BoletaPago" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Cargo" EntityType="Self.Cargo" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Departamento" EntityType="Self.Departamento" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Empleado" EntityType="Self.Empleado" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="HistorialSalarial" EntityType="Self.HistorialSalarial" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="SolicitudDespido" EntityType="Self.SolicitudDespido" Schema="dbo" store:Type="Tables" />
@@ -214,6 +235,10 @@
           <AssociationSet Name="FK_Boleta_Empleado" Association="Self.FK_Boleta_Empleado">
             <End Role="Empleado" EntitySet="Empleado" />
             <End Role="BoletaPago" EntitySet="BoletaPago" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Cargo_Departamento" Association="Self.FK_Cargo_Departamento">
+            <End Role="Departamento" EntitySet="Departamento" />
+            <End Role="Cargo" EntitySet="Cargo" />
           </AssociationSet>
           <AssociationSet Name="FK_Despido_Empleado" Association="Self.FK_Despido_Empleado">
             <End Role="Empleado" EntitySet="Empleado" />
@@ -282,7 +307,17 @@
           <Property Name="BonoEscala1" Type="Decimal" Precision="10" Scale="2" Nullable="false" />
           <Property Name="BonoEscala2" Type="Decimal" Precision="10" Scale="2" Nullable="false" />
           <Property Name="BonoEscala3" Type="Decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="IdDepartamento" Type="Int32" />
+          <NavigationProperty Name="Departamento" Relationship="Self.FK_Cargo_Departamento" FromRole="Cargo" ToRole="Departamento" />
           <NavigationProperty Name="Empleado" Relationship="Self.FK_Empleado_Cargo" FromRole="Cargo" ToRole="Empleado" />
+        </EntityType>
+        <EntityType Name="Departamento">
+          <Key>
+            <PropertyRef Name="IdDepartamento" />
+          </Key>
+          <Property Name="IdDepartamento" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="NombreDepartamento" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <NavigationProperty Name="Cargo" Relationship="Self.FK_Cargo_Departamento" FromRole="Departamento" ToRole="Cargo" />
         </EntityType>
         <EntityType Name="Empleado">
           <Key>
@@ -377,6 +412,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_Cargo_Departamento">
+          <End Role="Departamento" Type="Self.Departamento" Multiplicity="0..1" />
+          <End Role="Cargo" Type="Self.Cargo" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Departamento">
+              <PropertyRef Name="IdDepartamento" />
+            </Principal>
+            <Dependent Role="Cargo">
+              <PropertyRef Name="IdDepartamento" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_Empleado_Cargo">
           <End Role="Cargo" Type="Self.Cargo" Multiplicity="1">
             <OnDelete Action="Cascade" />
@@ -455,10 +502,11 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityContainer Name="SistemaRRHHEntities1" annotation:LazyLoadingEnabled="true">
+        <EntityContainer Name="SistemaRRHHEntities2" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Asistencia" EntityType="Self.Asistencia" />
           <EntitySet Name="BoletaPago" EntityType="Self.BoletaPago" />
           <EntitySet Name="Cargo" EntityType="Self.Cargo" />
+          <EntitySet Name="Departamento" EntityType="Self.Departamento" />
           <EntitySet Name="Empleado" EntityType="Self.Empleado" />
           <EntitySet Name="HistorialSalarial" EntityType="Self.HistorialSalarial" />
           <EntitySet Name="SolicitudDespido" EntityType="Self.SolicitudDespido" />
@@ -470,6 +518,10 @@
           <AssociationSet Name="FK_Boleta_Empleado" Association="Self.FK_Boleta_Empleado">
             <End Role="Empleado" EntitySet="Empleado" />
             <End Role="BoletaPago" EntitySet="BoletaPago" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Cargo_Departamento" Association="Self.FK_Cargo_Departamento">
+            <End Role="Departamento" EntitySet="Departamento" />
+            <End Role="Cargo" EntitySet="Cargo" />
           </AssociationSet>
           <AssociationSet Name="FK_Empleado_Cargo" Association="Self.FK_Empleado_Cargo">
             <End Role="Cargo" EntitySet="Cargo" />
@@ -501,7 +553,7 @@
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="SistemaRRHHModelStoreContainer" CdmEntityContainer="SistemaRRHHEntities1">
+        <EntityContainerMapping StorageEntityContainer="SistemaRRHHModelStoreContainer" CdmEntityContainer="SistemaRRHHEntities2">
           <EntitySetMapping Name="Asistencia">
             <EntityTypeMapping TypeName="SistemaRRHHModel.Asistencia">
               <MappingFragment StoreEntitySet="Asistencia">
@@ -538,6 +590,15 @@
                 <ScalarProperty Name="BonoEscala1" ColumnName="BonoEscala1" />
                 <ScalarProperty Name="BonoEscala2" ColumnName="BonoEscala2" />
                 <ScalarProperty Name="BonoEscala3" ColumnName="BonoEscala3" />
+                <ScalarProperty Name="IdDepartamento" ColumnName="IdDepartamento" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Departamento">
+            <EntityTypeMapping TypeName="SistemaRRHHModel.Departamento">
+              <MappingFragment StoreEntitySet="Departamento">
+                <ScalarProperty Name="IdDepartamento" ColumnName="IdDepartamento" />
+                <ScalarProperty Name="NombreDepartamento" ColumnName="NombreDepartamento" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

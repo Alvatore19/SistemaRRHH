@@ -31,6 +31,9 @@ namespace SistemaRRHH
         public FormGestionEmpleados(string nivelUsuario, string idEmpleadoLogueado)
         {
             InitializeComponent();
+
+            this.AutoScroll = true;
+
             InicializarContador();
 
             idUsuarioActual = idEmpleadoLogueado;
@@ -48,26 +51,11 @@ namespace SistemaRRHH
             ActualizarLabelZoom();
 
             txtActualizarNombre.Enabled = false;
-            txtActualizarCargo.Enabled = false;
+            cmbActualizarCargo.Enabled = false;
             cmbActualizarJefe.Enabled = false;
             btnActualizar.Enabled = false;
 
-            // Cargar cargos en ComboBox
-            try
-            {
-                using (var db = new SistemaRRHHEntities())
-                {
-                    var listaCargos = db.Cargo.ToList();
-                    cmbCargo.DataSource = listaCargos;
-                    cmbCargo.DisplayMember = "NombreRol";
-                    cmbCargo.ValueMember = "IdCargo";
-                    cmbCargo.SelectedIndex = -1;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error: " + ex.Message);
-            }
+            CargarDepartamentos();
 
             txtDui.MaxLength = 10;
             txtDui.KeyPress += txtDui_KeyPress;
@@ -94,6 +82,19 @@ namespace SistemaRRHH
             panelStats.GetType().GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(panelStats, true);
         }
 
+        private void cmbActualizarCargo_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbActualizarCargo.SelectedIndex != -1 && cmbActualizarCargo.SelectedItem is Cargo cargoBD)
+            {
+                cmbEscalaSalarial.Items.Clear();
+                cmbEscalaSalarial.Items.Add($"Salario Base (${cargoBD.SalarioBase})");
+                cmbEscalaSalarial.Items.Add($"Escala 1 (${cargoBD.BonoEscala1})");
+                cmbEscalaSalarial.Items.Add($"Escala 2 (${cargoBD.BonoEscala2})");
+                cmbEscalaSalarial.Items.Add($"Escala 3 (${cargoBD.BonoEscala3})");
+                cmbEscalaSalarial.SelectedIndex = 0;
+            }
+        }
+
         private void panelArbol_Resize(object sender, EventArgs e)
         {
             panelArbol.Invalidate(); 
@@ -103,7 +104,7 @@ namespace SistemaRRHH
         {
             try
             {
-                using (var db = new SistemaRRHHEntities())
+                using (var db = new SistemaRRHHEntities2())
                 {
                     int maxNum = db.Empleado
                         .Where(e => e.IdEmpleado.StartsWith("EMP-"))
@@ -119,6 +120,61 @@ namespace SistemaRRHH
             catch
             {
                 proximoIdNumerico = 1;
+            }
+        }
+
+        // ==========================================
+        // LÓGICA DE DEPARTAMENTOS Y CARGOS
+        // ==========================================
+        private void CargarDepartamentos()
+        {
+            try
+            {
+                using (var db = new SistemaRRHHEntities2())
+                {
+                    // 1. Llenamos el de crear empleado
+                    var deptos1 = db.Departamento.ToList();
+                    cmbDepartamento.DisplayMember = "NombreDepartamento"; // <-- PRIMERO ESTO
+                    cmbDepartamento.ValueMember = "IdDepartamento";       // <-- LUEGO ESTO
+                    cmbDepartamento.DataSource = deptos1;                 // <-- AL FINAL EL DATASOURCE
+                    cmbDepartamento.SelectedIndex = -1;
+
+                    // 2. Llenamos el de actualizar empleado
+                    var deptos2 = db.Departamento.ToList();
+                    cmbActualizarDepartamento.DisplayMember = "NombreDepartamento"; // <-- PRIMERO ESTO
+                    cmbActualizarDepartamento.ValueMember = "IdDepartamento";       // <-- LUEGO ESTO
+                    cmbActualizarDepartamento.DataSource = deptos2;                 // <-- AL FINAL EL DATASOURCE
+                    cmbActualizarDepartamento.SelectedIndex = -1;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al cargar departamentos: " + ex.Message);
+            }
+        }
+
+        private void cmbDepartamento_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // El "is int" es el escudo que evita el InvalidCastException
+            if (cmbDepartamento.SelectedIndex != -1 && cmbDepartamento.SelectedValue is int)
+            {
+                int idDeptoSeleccionado = (int)cmbDepartamento.SelectedValue;
+                try
+                {
+                    using (var db = new SistemaRRHHEntities2())
+                    {
+                        var cargosFiltrados = db.Cargo.Where(c => c.IdDepartamento == idDeptoSeleccionado).ToList();
+                        cmbCargo.DisplayMember = "NombreRol";
+                        cmbCargo.ValueMember = "IdCargo";
+                        cmbCargo.DataSource = cargosFiltrados;
+                        cmbCargo.SelectedIndex = -1;
+                    }
+                }
+                catch (Exception ex) { Console.WriteLine(ex.Message); }
+            }
+            else
+            {
+                cmbCargo.DataSource = null;
             }
         }
 
@@ -141,12 +197,28 @@ namespace SistemaRRHH
         // --- MÉTODOS PARA LLENAR LOS DATAGRIDVIEW ---
         private void CargarDirectorioDataGrid(List<NodoEmpleado> todosLosNodos)
         {
+            // 1. Consultar la base de datos para obtener la verdad absoluta de los departamentos
+            Dictionary<string, string> deptosReales = new Dictionary<string, string>();
+            using (var db = new SistemaRRHHEntities2())
+            {
+                // Traemos los empleados con sus cargos y departamentos actualizados
+                var empBD = db.Empleado.Include("Cargo.Departamento").ToList();
+                foreach (var e in empBD)
+                {
+                    deptosReales[e.IdEmpleado] = (e.Cargo != null && e.Cargo.Departamento != null)
+                                                 ? e.Cargo.Departamento.NombreDepartamento
+                                                 : "N/A";
+                }
+            }
+
+            // 2. Unir la información del árbol con el departamento real de la BD
             var directorio = todosLosNodos.Select(emp => new
             {
                 Código = emp.Id,
                 Nombre = emp.Nombre,
                 DUI = emp.Dui,
                 Cargo = emp.Puesto,
+                Departamento = deptosReales.ContainsKey(emp.Id) ? deptosReales[emp.Id] : "N/A", // <-- Aquí extrae el Depto
                 Jefe_Inmediato = emp.Jefe != null ? emp.Jefe.Nombre : "N/A (Cúspide)",
                 Sueldo = emp.Sueldo
             }).ToList();
@@ -159,7 +231,7 @@ namespace SistemaRRHH
         {
             try
             {
-                using (var db = new SistemaRRHHEntities())
+                using (var db = new SistemaRRHHEntities2())
                 {
                     var empleadosBD = db.Empleado
                         .Include("Cargo")
@@ -220,7 +292,7 @@ namespace SistemaRRHH
         {
             try
             {
-                using (var db = new SistemaRRHHEntities())
+                using (var db = new SistemaRRHHEntities2())
                 {
                     var solicitudes = (from s in db.SolicitudDespido
                                        where s.EstadoAprobacion == "Pendiente"
@@ -308,7 +380,7 @@ namespace SistemaRRHH
             // Aplicación de Try-Catch para base de datos
             try
             {
-                using (var db = new SistemaRRHHEntities())
+                using (var db = new SistemaRRHHEntities2())
                 {
                     if (rolUsuarioActual == "Director General")
                     {
@@ -365,7 +437,7 @@ namespace SistemaRRHH
             string idADespedir = dgvSolicitudes.SelectedRows[0].Cells["ID_Empleado"].Value.ToString();
             string idNuevoJefe = dgvSolicitudes.SelectedRows[0].Cells["Nuevo_Jefe_ID"].Value?.ToString();
 
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 // 1. Efectuar despido en SQL
                 var empBD = db.Empleado.FirstOrDefault(emp => emp.IdEmpleado == idADespedir);
@@ -406,7 +478,7 @@ namespace SistemaRRHH
 
             int idSolicitud = Convert.ToInt32(dgvSolicitudes.SelectedRows[0].Cells["ID_Solicitud"].Value);
 
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var solicitud = db.SolicitudDespido.Find(idSolicitud);
                 if (solicitud != null)
@@ -458,7 +530,7 @@ namespace SistemaRRHH
                 string nombreCargo = cargoSeleccionado.NombreRol;
                 int idCargoSQL = cargoSeleccionado.IdCargo;
 
-                using (var db = new SistemaRRHHEntities())
+                using (var db = new SistemaRRHHEntities2())
                 {
                     if (db.Empleado.Any(emp => emp.DocumentoLegal == txtDui.Text))
                     {
@@ -555,7 +627,7 @@ namespace SistemaRRHH
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(txtActualizarNombre.Text) || string.IsNullOrWhiteSpace(txtActualizarCargo.Text))
+            if (string.IsNullOrWhiteSpace(txtActualizarNombre.Text) || cmbActualizarCargo.SelectedIndex == -1)
             {
                 MessageBox.Show("Por favor, completa Nombre y Cargo.");
                 return;
@@ -580,9 +652,12 @@ namespace SistemaRRHH
             try
             {
                 double salarioFinal = 0;
-                using (var db = new SistemaRRHHEntities())
+                using (var db = new SistemaRRHHEntities2())
                 {
-                    var cargoBD = db.Cargo.FirstOrDefault(c => c.NombreRol == txtActualizarCargo.Text);
+                    // 1. Obtenemos el ID exacto del cargo seleccionado
+                    int idCargoNuevo = (int)cmbActualizarCargo.SelectedValue;
+                    var cargoBD = db.Cargo.FirstOrDefault(c => c.IdCargo == idCargoNuevo);
+
                     if (cargoBD != null)
                     {
                         switch (cmbEscalaSalarial.SelectedIndex)
@@ -594,25 +669,29 @@ namespace SistemaRRHH
                         }
                     }
 
-                    // Validación: Evitar que asigne exactamente el mismo sueldo/escala que ya tiene
-                    if (salarioFinal == empAEditar.Sueldo && empAEditar.Nombre == txtActualizarNombre.Text && empAEditar.Puesto == txtActualizarCargo.Text && ((empAEditar.Jefe != null && empAEditar.Jefe.Id == idNuevoJefe) || (empAEditar.Jefe == null && idNuevoJefe == null)))
+                    // 2. Buscamos el registro real en la base de datos
+                    var empBD = db.Empleado.FirstOrDefault(emp => emp.IdEmpleado == empAEditar.Id);
+                    if (empBD != null)
                     {
-                        MessageBox.Show("El empleado ya posee esta escala salarial y no se detectaron cambios en sus otros datos.", "Sin Cambios", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        return;
-                    }
-
-                    bool exito = miEmpresa.ActualizarEmpleado(empAEditar.Id, txtActualizarNombre.Text, txtActualizarCargo.Text, salarioFinal, idNuevoJefe);
-
-                    if (exito)
-                    {
-                        var empBD = db.Empleado.FirstOrDefault(emp => emp.IdEmpleado == empAEditar.Id);
-                        if (empBD != null)
+                        // CORRECCIÓN CRUCIAL: Comparamos usando IDs de la BD (empBD.IdCargo == idCargoNuevo) 
+                        // en lugar de comparar las cadenas de texto de los puestos.
+                        if (salarioFinal == (double)empBD.SalarioActual &&
+                            empBD.NombreCompleto == txtActualizarNombre.Text &&
+                            empBD.IdCargo == idCargoNuevo &&
+                            ((empBD.IdJefe == idNuevoJefe) || (string.IsNullOrEmpty(empBD.IdJefe) && string.IsNullOrEmpty(idNuevoJefe))))
                         {
+                            MessageBox.Show("El empleado ya posee esta escala salarial y no se detectaron cambios en sus otros datos.", "Sin Cambios", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            return;
+                        }
+
+                        // 3. Si pasa la validación, actualizamos primero el árbol en memoria RAM
+                        bool exito = miEmpresa.ActualizarEmpleado(empAEditar.Id, txtActualizarNombre.Text, cargoBD.NombreRol, salarioFinal, idNuevoJefe);
+                        if (exito)
+                        {
+                            // 4. Aplicamos los cambios al objeto de Entity Framework
                             empBD.NombreCompleto = txtActualizarNombre.Text;
-
-                            if (cargoBD != null) empBD.IdCargo = cargoBD.IdCargo;
-                            if (idNuevoJefe != null) empBD.IdJefe = idNuevoJefe;
-
+                            empBD.IdCargo = idCargoNuevo; // Aquí se guarda el nuevo depto de forma implícita
+                            empBD.IdJefe = idNuevoJefe;
                             empBD.SalarioActual = (decimal)salarioFinal;
 
                             if (cmbEscalaSalarial.SelectedIndex > 0)
@@ -628,16 +707,19 @@ namespace SistemaRRHH
                                 db.HistorialSalarial.Add(nuevoHistorial);
                             }
 
+                            // 5. Impactamos la base de datos de SQL Server
                             db.SaveChanges();
-                        }
 
-                        MessageBox.Show("Datos y Escala Salarial actualizados correctamente en el sistema.", "Actualización Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        txtMotivoAumento.Clear();
-                        RefrescarUIArbol(true);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Error al actualizar la jerarquía. Verifica que el nuevo jefe sea válido y no genere ciclos.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Datos y Escala Salarial actualizados correctamente en el sistema.", "Actualización Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            txtMotivoAumento.Clear();
+
+                            // 6. Forzamos el redibujado y actualización del DataGrid
+                            RefrescarUIArbol(true);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Error al actualizar la jerarquía. Verifica que el nuevo jefe sea válido y no genere ciclos.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                     }
                 }
             }
@@ -652,7 +734,7 @@ namespace SistemaRRHH
             if (cmbActualizarSeleccion.SelectedIndex != -1)
             {
                 txtActualizarNombre.Enabled = true;
-                txtActualizarCargo.Enabled = true;
+                cmbActualizarCargo.Enabled = true;
                 cmbEscalaSalarial.Enabled = true;
                 txtMotivoAumento.Enabled = true;
                 btnActualizar.Enabled = true;
@@ -660,22 +742,53 @@ namespace SistemaRRHH
                 NodoEmpleado empSeleccionado = (NodoEmpleado)cmbActualizarSeleccion.SelectedItem;
 
                 txtActualizarNombre.Text = empSeleccionado.Nombre;
-                txtActualizarCargo.Text = empSeleccionado.Puesto;
-                textBox1.Text = empSeleccionado.Dui; 
+                textBox1.Text = empSeleccionado.Dui;
 
+                // Limpiamos los items antes de ir a la BD
                 cmbEscalaSalarial.Items.Clear();
-                using (var db = new SistemaRRHHEntities())
+
+                using (var db = new SistemaRRHHEntities2())
                 {
-                    var cargoBD = db.Cargo.FirstOrDefault(c => c.NombreRol == empSeleccionado.Puesto);
-                    if (cargoBD != null)
+                    var empleadoReal = db.Empleado.Include("Cargo").FirstOrDefault(emp => emp.IdEmpleado == empSeleccionado.Id);
+
+                    if (empleadoReal != null && empleadoReal.Cargo != null)
                     {
-                        cmbEscalaSalarial.Items.Add($"Base: ${cargoBD.SalarioBase}");
-                        cmbEscalaSalarial.Items.Add($"Escala 1: ${cargoBD.SalarioBase + cargoBD.BonoEscala1}");
-                        cmbEscalaSalarial.Items.Add($"Escala 2: ${cargoBD.SalarioBase + cargoBD.BonoEscala2}");
-                        cmbEscalaSalarial.Items.Add($"Escala 3: ${cargoBD.SalarioBase + cargoBD.BonoEscala3}");
-                        cmbEscalaSalarial.SelectedIndex = 0;
+                        var cargoBD = empleadoReal.Cargo;
+
+                        // 1. LLENAMOS EL COMBOBOX DINÁMICAMENTE CON LOS MONTOS
+                        cmbEscalaSalarial.Items.Add($"Salario Base (${cargoBD.SalarioBase})");
+                        cmbEscalaSalarial.Items.Add($"Escala 1 (${cargoBD.SalarioBase + cargoBD.BonoEscala1})");
+                        cmbEscalaSalarial.Items.Add($"Escala 2 (${cargoBD.SalarioBase + cargoBD.BonoEscala2})");
+                        cmbEscalaSalarial.Items.Add($"Escala 3 (${cargoBD.SalarioBase + cargoBD.BonoEscala3})");
+
+                        // 2. Escudo contra nulos
+                        if (cmbActualizarDepartamento.DataSource != null)
+                        {
+                            if (cargoBD.IdDepartamento.HasValue)
+                                cmbActualizarDepartamento.SelectedValue = cargoBD.IdDepartamento.Value;
+                            else
+                                cmbActualizarDepartamento.SelectedIndex = -1;
+                        }
+
+                        if (cmbActualizarCargo.DataSource != null)
+                        {
+                            cmbActualizarCargo.SelectedValue = cargoBD.IdCargo;
+                        }
+
+                        // 3. DETECTOR DE SUELDO
+                        if (empSeleccionado.Sueldo == (double)(cargoBD.SalarioBase + cargoBD.BonoEscala3))
+                            cmbEscalaSalarial.SelectedIndex = 3;
+                        else if (empSeleccionado.Sueldo == (double)(cargoBD.SalarioBase + cargoBD.BonoEscala2))
+                            cmbEscalaSalarial.SelectedIndex = 2;
+                        else if (empSeleccionado.Sueldo == (double)(cargoBD.SalarioBase + cargoBD.BonoEscala1))
+                            cmbEscalaSalarial.SelectedIndex = 1;
+                        else
+                            cmbEscalaSalarial.SelectedIndex = 0;
                     }
                 }
+
+                cmbActualizarDepartamento.Enabled = true;
+                cmbActualizarCargo.Enabled = true;
 
                 if (empSeleccionado.Jefe != null)
                 {
@@ -698,15 +811,17 @@ namespace SistemaRRHH
             else
             {
                 txtActualizarNombre.Clear();
-                txtActualizarCargo.Clear();
                 cmbEscalaSalarial.Items.Clear();
                 txtMotivoAumento.Clear();
-                textBox1.Clear(); 
+                textBox1.Clear();
 
                 cmbActualizarJefe.SelectedIndex = -1;
+                cmbActualizarDepartamento.SelectedIndex = -1;
+                cmbActualizarCargo.DataSource = null;
 
                 txtActualizarNombre.Enabled = false;
-                txtActualizarCargo.Enabled = false;
+                cmbActualizarDepartamento.Enabled = false;
+                cmbActualizarCargo.Enabled = false;
                 cmbEscalaSalarial.Enabled = false;
                 txtMotivoAumento.Enabled = false;
                 cmbActualizarJefe.Enabled = false;
@@ -876,47 +991,65 @@ namespace SistemaRRHH
             Graphics lienzo = e.Graphics;
             lienzo.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-            if (miEmpresa.Raiz == null || miEmpresa.Raiz.Subalternos.Count == 0)
-            {
-                lienzo.DrawString("Aún no hay departamentos para mostrar estadísticas.", this.Font, Brushes.Gray, 10, 10);
-                return;
-            }
-
             List<string> nombresDepartamentos = new List<string>();
             List<int> cantidades = new List<int>();
             int totalEmpleadosEnDepartamentos = 0;
 
-            foreach (NodoEmpleado jefeDep in miEmpresa.Raiz.Subalternos)
+            // CONSULTA DIRECTA A LA BASE DE DATOS (Fácil, Seguro y Exacto)
+            try
             {
-                nombresDepartamentos.Add(jefeDep.Nombre + " (" + jefeDep.Puesto + ")");
-                int tamanoDepartamento = miEmpresa.ContarEmpleadosSubarbol(jefeDep);
-                cantidades.Add(tamanoDepartamento);
-                totalEmpleadosEnDepartamentos += tamanoDepartamento;
+                using (var db = new SistemaRRHHEntities2())
+                {
+                    var estadisticas = db.Empleado
+                        .Where(emp => emp.EstadoActivo == true && emp.Cargo != null && emp.Cargo.Departamento != null)
+                        .GroupBy(emp => emp.Cargo.Departamento.NombreDepartamento)
+                        .Select(g => new { Departamento = g.Key, Cantidad = g.Count() })
+                        .ToList();
+
+                    foreach (var stat in estadisticas)
+                    {
+                        nombresDepartamentos.Add(stat.Departamento);
+                        cantidades.Add(stat.Cantidad);
+                        totalEmpleadosEnDepartamentos += stat.Cantidad;
+                    }
+                }
+            }
+            catch
+            {
+                return;
+            }
+
+            // Prevención del error de División por cero (el que causaba la gráfica negra)
+            if (totalEmpleadosEnDepartamentos == 0)
+            {
+                lienzo.DrawString("Aún no hay empleados asignados a departamentos para mostrar estadísticas.", this.Font, Brushes.Gray, 10, 10);
+                return;
             }
 
             Color[] coloresPastel = { Color.Tomato, Color.CornflowerBlue, Color.MediumSeaGreen, Color.Gold, Color.MediumOrchid, Color.Orange, Color.Turquoise };
-
             Rectangle rectPastel = new Rectangle(10, 30, 100, 100);
             float anguloInicio = 0f;
             int leyendaY = 30;
-
 
             for (int i = 0; i < cantidades.Count; i++)
             {
                 float porcentaje = (float)cantidades[i] / totalEmpleadosEnDepartamentos;
                 float anguloBarrido = porcentaje * 360f;
 
-                Brush brochaColor = new SolidBrush(coloresPastel[i % coloresPastel.Length]);
+                using (Brush brochaColor = new SolidBrush(coloresPastel[i % coloresPastel.Length]))
+                {
+                    lienzo.FillPie(brochaColor, rectPastel, anguloInicio, anguloBarrido);
 
-                lienzo.FillPie(brochaColor, rectPastel, anguloInicio, anguloBarrido);
+                    int leyendaX = 130;
+                    lienzo.FillRectangle(brochaColor, leyendaX, leyendaY, 15, 15);
+                }
+
                 lienzo.DrawPie(Pens.Black, rectPastel, anguloInicio, anguloBarrido);
-
-                int leyendaX = 130;
-                lienzo.FillRectangle(brochaColor, leyendaX, leyendaY, 15, 15);
-                lienzo.DrawRectangle(Pens.Black, leyendaX, leyendaY, 15, 15);
+                int rectX = 130;
+                lienzo.DrawRectangle(Pens.Black, rectX, leyendaY, 15, 15);
 
                 string textoLeyenda = $"{nombresDepartamentos[i]}: {cantidades[i]} emp. ({porcentaje:P1})";
-                lienzo.DrawString(textoLeyenda, this.Font, Brushes.Black, leyendaX + 20, leyendaY);
+                lienzo.DrawString(textoLeyenda, this.Font, Brushes.Black, rectX + 20, leyendaY);
 
                 anguloInicio += anguloBarrido;
                 leyendaY += 25;
@@ -973,36 +1106,7 @@ namespace SistemaRRHH
                 }
             }
         }
-
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
-        {
-            if (keyData == (Keys.Control | Keys.Oemplus) || keyData == (Keys.Control | Keys.Add))
-            {
-                factorZoom = Math.Min(factorZoom + ZOOM_STEP, ZOOM_MAX);
-                panelArbol.Invalidate();
-                ActualizarLabelZoom();
-                return true;
-            }
-            else if (keyData == (Keys.Control | Keys.OemMinus) || keyData == (Keys.Control | Keys.Subtract))
-            {
-                factorZoom = Math.Max(factorZoom - ZOOM_STEP, ZOOM_MIN);
-                panelArbol.Invalidate();
-                ActualizarLabelZoom();
-                return true;
-            }
-            else if (keyData == (Keys.Control | Keys.D0))
-            {
-                // Ctrl + 0 = Reset zoom
-                factorZoom = 1.0f;
-                panelArbol.AutoScrollPosition = Point.Empty;
-                panelArbol.Invalidate();
-                ActualizarLabelZoom();
-                return true;
-            }
-
-            return base.ProcessCmdKey(ref msg, keyData);
-        }
-
+      
         private void cmbEliminar_SelectedIndexChanged_1(object sender, EventArgs e)
         {
             if (cmbEliminar.SelectedIndex != -1)
@@ -1040,6 +1144,31 @@ namespace SistemaRRHH
                 tamañoArbolCache = Size.Empty;
             else
                 tamañoArbolCache = CalcularEspacioArbol(miEmpresa.Raiz, 0);
+        }
+
+        private void cmbActualizarDepartamento_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Mismo escudo aquí
+            if (cmbActualizarDepartamento.SelectedIndex != -1 && cmbActualizarDepartamento.SelectedValue is int)
+            {
+                int idDepto = (int)cmbActualizarDepartamento.SelectedValue;
+                try
+                {
+                    using (var db = new SistemaRRHHEntities2())
+                    {
+                        var cargos = db.Cargo.Where(c => c.IdDepartamento == idDepto).ToList();
+                        cmbActualizarCargo.DisplayMember = "NombreRol";
+                        cmbActualizarCargo.ValueMember = "IdCargo";
+                        cmbActualizarCargo.DataSource = cargos;
+                        // No le ponemos SelectedIndex = -1 aquí para no borrar la selección al cargar el empleado
+                    }
+                }
+                catch (Exception ex) { Console.WriteLine(ex.Message); }
+            }
+            else
+            {
+                cmbActualizarCargo.DataSource = null;
+            }
         }
     }
 }

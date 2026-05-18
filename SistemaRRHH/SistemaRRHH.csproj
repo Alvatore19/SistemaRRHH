@@ -65,6 +65,9 @@
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>
     <Compile Include="ColaPrioridadPermisos.cs" />
+    <Compile Include="Departamento.cs">
+      <DependentUpon>ModeloRRHH.tt</DependentUpon>
+    </Compile>
     <Compile Include="Empleado.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>

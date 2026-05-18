@@ -31,7 +31,7 @@ namespace SistemaRRHH
 
         private void CargarDatosPersonales()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var empleado = db.Empleado
                                  .Include("Cargo")
@@ -59,7 +59,7 @@ namespace SistemaRRHH
 
         private void CargarPermisos()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var misPermisos = db.SolicitudPermiso
                                     .Where(s => s.IdEmpleado == _idEmpleadoActual)

@@ -13,6 +13,13 @@ GO
 -- 1. Creación de Tablas con Restricciones (Constraints)
 -- =====================================================
 
+CREATE TABLE Departamento (
+    IdDepartamento INT IDENTITY(1,1) NOT NULL,
+    NombreDepartamento VARCHAR(100) NOT NULL UNIQUE,
+    CONSTRAINT PK_Departamento PRIMARY KEY (IdDepartamento)
+);
+
+
 CREATE TABLE Cargo(
     IdCargo INT IDENTITY(1,1) NOT NULL,
     NombreRol VARCHAR(100) NOT NULL,
@@ -21,7 +28,9 @@ CREATE TABLE Cargo(
     BonoEscala1 DECIMAL(10,2) NOT NULL DEFAULT 0.00 CHECK (BonoEscala1 > 0),
     BonoEscala2 DECIMAL(10,2) NOT NULL DEFAULT 0.00 CHECK (BonoEscala2 > 0),
     BonoEscala3 DECIMAL(10,2) NOT NULL DEFAULT 0.00 CHECK (BonoEscala3 > 0),
-    CONSTRAINT PK_IdCargo PRIMARY KEY(IdCargo)
+    IdDepartamento INT NULL,
+    CONSTRAINT PK_IdCargo PRIMARY KEY(IdCargo),
+    CONSTRAINT FK_Cargo_Departamento FOREIGN KEY (IdDepartamento) REFERENCES Departamento(IdDepartamento) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE TABLE Empleado(
@@ -198,3 +207,9 @@ VALUES
 ('EMP-5', 'Vacaciones Anuales', 3, 'Pendiente', 40.00, 'Solicitud de vacaciones anuales correspondientes a ley para viaje familiar.', NULL),
 ('EMP-4', 'Incapacidad Medica', 1, 'Aprobado', 48.00, 'Incapacidad extendida por el ISSS debido a infección estomacal severa.', 'C:\Documentos\Incapacidad_ISSS_EMP4.pdf');
 GO
+
+-- ===================================================
+-- 3. Alteración de Tablas para Nuevos Requerimientos
+-- ===================================================
+
+select * from Empleado;

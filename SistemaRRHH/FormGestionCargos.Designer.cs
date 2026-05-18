@@ -21,6 +21,10 @@
             this.txtNombreCargo = new System.Windows.Forms.TextBox();
             this.lblSueldoBase = new System.Windows.Forms.Label();
             this.txtSueldoBase = new System.Windows.Forms.TextBox();
+            this.lblNivelJerarquico = new System.Windows.Forms.Label();
+            this.numNivelJerarquico = new System.Windows.Forms.NumericUpDown();
+            this.lblDepartamento = new System.Windows.Forms.Label();
+            this.cmbDepartamento = new System.Windows.Forms.ComboBox();
             this.lblEscala1 = new System.Windows.Forms.Label();
             this.txtEscala1 = new System.Windows.Forms.TextBox();
             this.lblEscala2 = new System.Windows.Forms.Label();
@@ -31,34 +35,24 @@
             this.btnEditarCargo = new System.Windows.Forms.Button();
             this.btnEliminarCargo = new System.Windows.Forms.Button();
             this.dgvCargos = new System.Windows.Forms.DataGridView();
-            this.gbFusionCargos = new System.Windows.Forms.GroupBox();
-            this.cmbCargoFusion1 = new System.Windows.Forms.ComboBox();
-            this.cmbCargoFusion2 = new System.Windows.Forms.ComboBox();
-            this.txtNuevoCargoFusion = new System.Windows.Forms.TextBox();
-            this.btnFusionarCargos = new System.Windows.Forms.Button();
             this.tabDepartamentos = new System.Windows.Forms.TabPage();
             this.gbCrudDeptos = new System.Windows.Forms.GroupBox();
+            this.lblNombreDepto = new System.Windows.Forms.Label();
             this.txtNombreDepto = new System.Windows.Forms.TextBox();
             this.btnGuardarDepto = new System.Windows.Forms.Button();
+            this.btnEditarDepto = new System.Windows.Forms.Button();
+            this.btnEliminarDepto = new System.Windows.Forms.Button();
             this.dgvDepartamentos = new System.Windows.Forms.DataGridView();
-            this.gbFusionDeptos = new System.Windows.Forms.GroupBox();
-            this.rbJefe1 = new System.Windows.Forms.RadioButton();
-            this.rbJefe2 = new System.Windows.Forms.RadioButton();
-            this.cmbFusionDepto1 = new System.Windows.Forms.ComboBox();
-            this.cmbFusionDepto2 = new System.Windows.Forms.ComboBox();
-            this.txtNuevoDeptoFusion = new System.Windows.Forms.TextBox();
-            this.btnFusionarDeptos = new System.Windows.Forms.Button();
             this.lblTitulo = new System.Windows.Forms.Label();
 
             this.tabControlPrincipal.SuspendLayout();
             this.tabCargos.SuspendLayout();
             this.gbCrudCargos.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numNivelJerarquico)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvCargos)).BeginInit();
-            this.gbFusionCargos.SuspendLayout();
             this.tabDepartamentos.SuspendLayout();
             this.gbCrudDeptos.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDepartamentos)).BeginInit();
-            this.gbFusionDeptos.SuspendLayout();
             this.SuspendLayout();
 
             // 
@@ -79,7 +73,6 @@
             this.tabCargos.BackColor = System.Drawing.Color.WhiteSmoke;
             this.tabCargos.Controls.Add(this.gbCrudCargos);
             this.tabCargos.Controls.Add(this.dgvCargos);
-            this.tabCargos.Controls.Add(this.gbFusionCargos);
             this.tabCargos.Location = new System.Drawing.Point(4, 26);
             this.tabCargos.Name = "tabCargos";
             this.tabCargos.Padding = new System.Windows.Forms.Padding(3);
@@ -95,6 +88,10 @@
             this.gbCrudCargos.Controls.Add(this.txtNombreCargo);
             this.gbCrudCargos.Controls.Add(this.lblSueldoBase);
             this.gbCrudCargos.Controls.Add(this.txtSueldoBase);
+            this.gbCrudCargos.Controls.Add(this.lblNivelJerarquico);
+            this.gbCrudCargos.Controls.Add(this.numNivelJerarquico);
+            this.gbCrudCargos.Controls.Add(this.lblDepartamento);
+            this.gbCrudCargos.Controls.Add(this.cmbDepartamento);
             this.gbCrudCargos.Controls.Add(this.lblEscala1);
             this.gbCrudCargos.Controls.Add(this.txtEscala1);
             this.gbCrudCargos.Controls.Add(this.lblEscala2);
@@ -113,31 +110,64 @@
 
             this.lblNombreCargo.AutoSize = true;
             this.lblNombreCargo.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblNombreCargo.Location = new System.Drawing.Point(20, 40);
+            this.lblNombreCargo.Location = new System.Drawing.Point(20, 30);
             this.lblNombreCargo.Name = "lblNombreCargo";
             this.lblNombreCargo.Size = new System.Drawing.Size(109, 15);
             this.lblNombreCargo.TabIndex = 0;
             this.lblNombreCargo.Text = "Nombre del Cargo:";
 
             this.txtNombreCargo.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtNombreCargo.Location = new System.Drawing.Point(140, 37);
+            this.txtNombreCargo.Location = new System.Drawing.Point(140, 27);
             this.txtNombreCargo.Name = "txtNombreCargo";
             this.txtNombreCargo.Size = new System.Drawing.Size(250, 23);
             this.txtNombreCargo.TabIndex = 1;
 
             this.lblSueldoBase.AutoSize = true;
             this.lblSueldoBase.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblSueldoBase.Location = new System.Drawing.Point(20, 80);
+            this.lblSueldoBase.Location = new System.Drawing.Point(20, 60);
             this.lblSueldoBase.Name = "lblSueldoBase";
             this.lblSueldoBase.Size = new System.Drawing.Size(90, 15);
             this.lblSueldoBase.TabIndex = 2;
             this.lblSueldoBase.Text = "Sueldo Base ($):";
 
             this.txtSueldoBase.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtSueldoBase.Location = new System.Drawing.Point(140, 77);
+            this.txtSueldoBase.Location = new System.Drawing.Point(140, 57);
             this.txtSueldoBase.Name = "txtSueldoBase";
             this.txtSueldoBase.Size = new System.Drawing.Size(120, 23);
             this.txtSueldoBase.TabIndex = 3;
+
+            this.lblNivelJerarquico.AutoSize = true;
+            this.lblNivelJerarquico.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblNivelJerarquico.Location = new System.Drawing.Point(20, 90);
+            this.lblNivelJerarquico.Name = "lblNivelJerarquico";
+            this.lblNivelJerarquico.Size = new System.Drawing.Size(97, 15);
+            this.lblNivelJerarquico.TabIndex = 13;
+            this.lblNivelJerarquico.Text = "Nivel Jerárquico:";
+
+            this.numNivelJerarquico.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.numNivelJerarquico.Location = new System.Drawing.Point(140, 87);
+            this.numNivelJerarquico.Name = "numNivelJerarquico";
+            this.numNivelJerarquico.Size = new System.Drawing.Size(120, 23);
+            this.numNivelJerarquico.TabIndex = 14;
+            this.numNivelJerarquico.Minimum = 1;
+            this.numNivelJerarquico.Maximum = 4;
+            this.numNivelJerarquico.Value = 4;
+
+            this.lblDepartamento.AutoSize = true;
+            this.lblDepartamento.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblDepartamento.Location = new System.Drawing.Point(20, 120);
+            this.lblDepartamento.Name = "lblDepartamento";
+            this.lblDepartamento.Size = new System.Drawing.Size(86, 15);
+            this.lblDepartamento.TabIndex = 15;
+            this.lblDepartamento.Text = "Departamento:";
+
+            this.cmbDepartamento.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbDepartamento.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.cmbDepartamento.FormattingEnabled = true;
+            this.cmbDepartamento.Location = new System.Drawing.Point(140, 117);
+            this.cmbDepartamento.Name = "cmbDepartamento";
+            this.cmbDepartamento.Size = new System.Drawing.Size(250, 23);
+            this.cmbDepartamento.TabIndex = 16;
 
             this.lblEscala1.AutoSize = true;
             this.lblEscala1.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -221,57 +251,9 @@
             this.dgvCargos.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvCargos.Location = new System.Drawing.Point(20, 190);
             this.dgvCargos.Name = "dgvCargos";
-            this.dgvCargos.Size = new System.Drawing.Size(1010, 160);
+            // AMPLÍO EL ALTO DEL DATAGRIDVIEW
+            this.dgvCargos.Size = new System.Drawing.Size(1010, 300);
             this.dgvCargos.TabIndex = 1;
-
-            // 
-            // gbFusionCargos
-            // 
-            this.gbFusionCargos.BackColor = System.Drawing.Color.White;
-            this.gbFusionCargos.Controls.Add(this.cmbCargoFusion1);
-            this.gbFusionCargos.Controls.Add(this.cmbCargoFusion2);
-            this.gbFusionCargos.Controls.Add(this.txtNuevoCargoFusion);
-            this.gbFusionCargos.Controls.Add(this.btnFusionarCargos);
-            this.gbFusionCargos.Location = new System.Drawing.Point(20, 360);
-            this.gbFusionCargos.Name = "gbFusionCargos";
-            this.gbFusionCargos.Size = new System.Drawing.Size(1010, 130);
-            this.gbFusionCargos.TabIndex = 2;
-            this.gbFusionCargos.TabStop = false;
-            this.gbFusionCargos.Text = "🤝 Fusión de Cargos";
-
-            this.cmbCargoFusion1.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.cmbCargoFusion1.FormattingEnabled = true;
-            this.cmbCargoFusion1.Location = new System.Drawing.Point(20, 35);
-            this.cmbCargoFusion1.Name = "cmbCargoFusion1";
-            this.cmbCargoFusion1.Size = new System.Drawing.Size(400, 23);
-            this.cmbCargoFusion1.TabIndex = 0;
-            this.cmbCargoFusion1.Text = "-- Seleccione Cargo 1 --";
-
-            this.cmbCargoFusion2.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.cmbCargoFusion2.FormattingEnabled = true;
-            this.cmbCargoFusion2.Location = new System.Drawing.Point(20, 75);
-            this.cmbCargoFusion2.Name = "cmbCargoFusion2";
-            this.cmbCargoFusion2.Size = new System.Drawing.Size(400, 23);
-            this.cmbCargoFusion2.TabIndex = 1;
-            this.cmbCargoFusion2.Text = "-- Seleccione Cargo 2 --";
-
-            this.txtNuevoCargoFusion.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtNuevoCargoFusion.Location = new System.Drawing.Point(480, 35);
-            this.txtNuevoCargoFusion.Name = "txtNuevoCargoFusion";
-            this.txtNuevoCargoFusion.Size = new System.Drawing.Size(500, 23);
-            this.txtNuevoCargoFusion.TabIndex = 2;
-            this.txtNuevoCargoFusion.Text = "Nombre del Nuevo Cargo Fusionado";
-
-            this.btnFusionarCargos.BackColor = System.Drawing.Color.DarkOrange;
-            this.btnFusionarCargos.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnFusionarCargos.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.btnFusionarCargos.ForeColor = System.Drawing.Color.White;
-            this.btnFusionarCargos.Location = new System.Drawing.Point(480, 75);
-            this.btnFusionarCargos.Name = "btnFusionarCargos";
-            this.btnFusionarCargos.Size = new System.Drawing.Size(500, 30);
-            this.btnFusionarCargos.TabIndex = 3;
-            this.btnFusionarCargos.Text = "⚡ Ejecutar Fusión de Cargos";
-            this.btnFusionarCargos.UseVisualStyleBackColor = false;
 
             // 
             // tabDepartamentos
@@ -279,7 +261,6 @@
             this.tabDepartamentos.BackColor = System.Drawing.Color.WhiteSmoke;
             this.tabDepartamentos.Controls.Add(this.gbCrudDeptos);
             this.tabDepartamentos.Controls.Add(this.dgvDepartamentos);
-            this.tabDepartamentos.Controls.Add(this.gbFusionDeptos);
             this.tabDepartamentos.Location = new System.Drawing.Point(4, 26);
             this.tabDepartamentos.Name = "tabDepartamentos";
             this.tabDepartamentos.Padding = new System.Windows.Forms.Padding(3);
@@ -291,17 +272,28 @@
             // gbCrudDeptos
             // 
             this.gbCrudDeptos.BackColor = System.Drawing.Color.White;
+            this.gbCrudDeptos.Controls.Add(this.lblNombreDepto);
             this.gbCrudDeptos.Controls.Add(this.txtNombreDepto);
             this.gbCrudDeptos.Controls.Add(this.btnGuardarDepto);
+            this.gbCrudDeptos.Controls.Add(this.btnEditarDepto);
+            this.gbCrudDeptos.Controls.Add(this.btnEliminarDepto);
             this.gbCrudDeptos.Location = new System.Drawing.Point(20, 20);
             this.gbCrudDeptos.Name = "gbCrudDeptos";
             this.gbCrudDeptos.Size = new System.Drawing.Size(1010, 100);
             this.gbCrudDeptos.TabIndex = 0;
             this.gbCrudDeptos.TabStop = false;
-            this.gbCrudDeptos.Text = "Crear Departamento";
+            this.gbCrudDeptos.Text = "Crear / Editar Departamento";
+
+            this.lblNombreDepto.AutoSize = true;
+            this.lblNombreDepto.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblNombreDepto.Location = new System.Drawing.Point(20, 30);
+            this.lblNombreDepto.Name = "lblNombreDepto";
+            this.lblNombreDepto.Size = new System.Drawing.Size(155, 15);
+            this.lblNombreDepto.TabIndex = 2;
+            this.lblNombreDepto.Text = "Nombre del Departamento:";
 
             this.txtNombreDepto.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtNombreDepto.Location = new System.Drawing.Point(20, 45);
+            this.txtNombreDepto.Location = new System.Drawing.Point(20, 50);
             this.txtNombreDepto.Name = "txtNombreDepto";
             this.txtNombreDepto.Size = new System.Drawing.Size(400, 23);
             this.txtNombreDepto.TabIndex = 0;
@@ -310,12 +302,34 @@
             this.btnGuardarDepto.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnGuardarDepto.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnGuardarDepto.ForeColor = System.Drawing.Color.White;
-            this.btnGuardarDepto.Location = new System.Drawing.Point(480, 42);
+            this.btnGuardarDepto.Location = new System.Drawing.Point(440, 47);
             this.btnGuardarDepto.Name = "btnGuardarDepto";
-            this.btnGuardarDepto.Size = new System.Drawing.Size(250, 30);
+            this.btnGuardarDepto.Size = new System.Drawing.Size(150, 30);
             this.btnGuardarDepto.TabIndex = 1;
-            this.btnGuardarDepto.Text = "💾 Guardar Depto";
+            this.btnGuardarDepto.Text = "💾 Guardar";
             this.btnGuardarDepto.UseVisualStyleBackColor = false;
+
+            this.btnEditarDepto.BackColor = System.Drawing.Color.DodgerBlue;
+            this.btnEditarDepto.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnEditarDepto.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnEditarDepto.ForeColor = System.Drawing.Color.White;
+            this.btnEditarDepto.Location = new System.Drawing.Point(610, 47);
+            this.btnEditarDepto.Name = "btnEditarDepto";
+            this.btnEditarDepto.Size = new System.Drawing.Size(150, 30);
+            this.btnEditarDepto.TabIndex = 3;
+            this.btnEditarDepto.Text = "✏️ Actualizar";
+            this.btnEditarDepto.UseVisualStyleBackColor = false;
+
+            this.btnEliminarDepto.BackColor = System.Drawing.Color.Firebrick;
+            this.btnEliminarDepto.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnEliminarDepto.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnEliminarDepto.ForeColor = System.Drawing.Color.White;
+            this.btnEliminarDepto.Location = new System.Drawing.Point(780, 47);
+            this.btnEliminarDepto.Name = "btnEliminarDepto";
+            this.btnEliminarDepto.Size = new System.Drawing.Size(150, 30);
+            this.btnEliminarDepto.TabIndex = 4;
+            this.btnEliminarDepto.Text = "🗑️ Eliminar";
+            this.btnEliminarDepto.UseVisualStyleBackColor = false;
 
             // 
             // dgvDepartamentos
@@ -324,77 +338,9 @@
             this.dgvDepartamentos.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvDepartamentos.Location = new System.Drawing.Point(20, 130);
             this.dgvDepartamentos.Name = "dgvDepartamentos";
-            this.dgvDepartamentos.Size = new System.Drawing.Size(1010, 180);
+            // AMPLÍO EL ALTO DEL DATAGRIDVIEW DE DEPARTAMENTOS
+            this.dgvDepartamentos.Size = new System.Drawing.Size(1010, 360);
             this.dgvDepartamentos.TabIndex = 1;
-
-            // 
-            // gbFusionDeptos
-            // 
-            this.gbFusionDeptos.BackColor = System.Drawing.Color.White;
-            this.gbFusionDeptos.Controls.Add(this.rbJefe1);
-            this.gbFusionDeptos.Controls.Add(this.rbJefe2);
-            this.gbFusionDeptos.Controls.Add(this.cmbFusionDepto1);
-            this.gbFusionDeptos.Controls.Add(this.cmbFusionDepto2);
-            this.gbFusionDeptos.Controls.Add(this.txtNuevoDeptoFusion);
-            this.gbFusionDeptos.Controls.Add(this.btnFusionarDeptos);
-            this.gbFusionDeptos.Location = new System.Drawing.Point(20, 320);
-            this.gbFusionDeptos.Name = "gbFusionDeptos";
-            this.gbFusionDeptos.Size = new System.Drawing.Size(1010, 170);
-            this.gbFusionDeptos.TabIndex = 2;
-            this.gbFusionDeptos.TabStop = false;
-            this.gbFusionDeptos.Text = "🤝 Fusión de Departamentos Estructurales";
-
-            this.rbJefe1.AutoSize = true;
-            this.rbJefe1.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.rbJefe1.Location = new System.Drawing.Point(20, 40);
-            this.rbJefe1.Name = "rbJefe1";
-            this.rbJefe1.Size = new System.Drawing.Size(63, 19);
-            this.rbJefe1.TabIndex = 0;
-            this.rbJefe1.TabStop = true;
-            this.rbJefe1.Text = "Líder 1:";
-            this.rbJefe1.UseVisualStyleBackColor = true;
-
-            this.rbJefe2.AutoSize = true;
-            this.rbJefe2.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.rbJefe2.Location = new System.Drawing.Point(20, 80);
-            this.rbJefe2.Name = "rbJefe2";
-            this.rbJefe2.Size = new System.Drawing.Size(63, 19);
-            this.rbJefe2.TabIndex = 1;
-            this.rbJefe2.TabStop = true;
-            this.rbJefe2.Text = "Líder 2:";
-            this.rbJefe2.UseVisualStyleBackColor = true;
-
-            this.cmbFusionDepto1.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.cmbFusionDepto1.FormattingEnabled = true;
-            this.cmbFusionDepto1.Location = new System.Drawing.Point(100, 38);
-            this.cmbFusionDepto1.Name = "cmbFusionDepto1";
-            this.cmbFusionDepto1.Size = new System.Drawing.Size(320, 23);
-            this.cmbFusionDepto1.TabIndex = 2;
-
-            this.cmbFusionDepto2.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.cmbFusionDepto2.FormattingEnabled = true;
-            this.cmbFusionDepto2.Location = new System.Drawing.Point(100, 78);
-            this.cmbFusionDepto2.Name = "cmbFusionDepto2";
-            this.cmbFusionDepto2.Size = new System.Drawing.Size(320, 23);
-            this.cmbFusionDepto2.TabIndex = 3;
-
-            this.txtNuevoDeptoFusion.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtNuevoDeptoFusion.Location = new System.Drawing.Point(480, 38);
-            this.txtNuevoDeptoFusion.Name = "txtNuevoDeptoFusion";
-            this.txtNuevoDeptoFusion.Size = new System.Drawing.Size(500, 23);
-            this.txtNuevoDeptoFusion.TabIndex = 4;
-            this.txtNuevoDeptoFusion.Text = "Nuevo Nombre del Departamento";
-
-            this.btnFusionarDeptos.BackColor = System.Drawing.Color.DarkOrange;
-            this.btnFusionarDeptos.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnFusionarDeptos.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.btnFusionarDeptos.ForeColor = System.Drawing.Color.White;
-            this.btnFusionarDeptos.Location = new System.Drawing.Point(480, 78);
-            this.btnFusionarDeptos.Name = "btnFusionarDeptos";
-            this.btnFusionarDeptos.Size = new System.Drawing.Size(500, 30);
-            this.btnFusionarDeptos.TabIndex = 5;
-            this.btnFusionarDeptos.Text = "⚡ Ejecutar Fusión de Deptos";
-            this.btnFusionarDeptos.UseVisualStyleBackColor = false;
 
             // 
             // lblTitulo
@@ -426,32 +372,32 @@
             this.tabCargos.ResumeLayout(false);
             this.gbCrudCargos.ResumeLayout(false);
             this.gbCrudCargos.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numNivelJerarquico)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvCargos)).EndInit();
-            this.gbFusionCargos.ResumeLayout(false);
-            this.gbFusionCargos.PerformLayout();
             this.tabDepartamentos.ResumeLayout(false);
             this.gbCrudDeptos.ResumeLayout(false);
             this.gbCrudDeptos.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDepartamentos)).EndInit();
-            this.gbFusionDeptos.ResumeLayout(false);
-            this.gbFusionDeptos.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
         }
 
         #endregion
 
-        // Contenedores Principales
         private System.Windows.Forms.TabControl tabControlPrincipal;
         private System.Windows.Forms.TabPage tabCargos;
         private System.Windows.Forms.TabPage tabDepartamentos;
-
-        // Controles Cargos
         private System.Windows.Forms.GroupBox gbCrudCargos;
         private System.Windows.Forms.Label lblNombreCargo;
         private System.Windows.Forms.TextBox txtNombreCargo;
         private System.Windows.Forms.Label lblSueldoBase;
         private System.Windows.Forms.TextBox txtSueldoBase;
+        private System.Windows.Forms.Label lblNivelJerarquico;
+        private System.Windows.Forms.NumericUpDown numNivelJerarquico;
+
+        private System.Windows.Forms.Label lblDepartamento;
+        private System.Windows.Forms.ComboBox cmbDepartamento;
+
         private System.Windows.Forms.Label lblEscala1;
         private System.Windows.Forms.TextBox txtEscala1;
         private System.Windows.Forms.Label lblEscala2;
@@ -463,25 +409,16 @@
         private System.Windows.Forms.Button btnEliminarCargo;
         private System.Windows.Forms.DataGridView dgvCargos;
 
-        private System.Windows.Forms.GroupBox gbFusionCargos;
-        private System.Windows.Forms.ComboBox cmbCargoFusion1;
-        private System.Windows.Forms.ComboBox cmbCargoFusion2;
-        private System.Windows.Forms.TextBox txtNuevoCargoFusion;
-        private System.Windows.Forms.Button btnFusionarCargos;
-
-        // Controles Deptos
+        // --- VARIABLES DE DEPARTAMENTOS ---
         private System.Windows.Forms.GroupBox gbCrudDeptos;
+        private System.Windows.Forms.Label lblNombreDepto;
         private System.Windows.Forms.TextBox txtNombreDepto;
         private System.Windows.Forms.Button btnGuardarDepto;
+        private System.Windows.Forms.Button btnEditarDepto;
+        private System.Windows.Forms.Button btnEliminarDepto;
         private System.Windows.Forms.DataGridView dgvDepartamentos;
+        // ----------------------------------
 
-        private System.Windows.Forms.GroupBox gbFusionDeptos;
-        private System.Windows.Forms.RadioButton rbJefe1;
-        private System.Windows.Forms.RadioButton rbJefe2;
-        private System.Windows.Forms.ComboBox cmbFusionDepto1;
-        private System.Windows.Forms.ComboBox cmbFusionDepto2;
-        private System.Windows.Forms.TextBox txtNuevoDeptoFusion;
-        private System.Windows.Forms.Button btnFusionarDeptos;
         private System.Windows.Forms.Label lblTitulo;
     }
 }

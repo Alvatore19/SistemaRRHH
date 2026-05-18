@@ -73,7 +73,7 @@ namespace SistemaRRHH
 
         private void CargarTodoDirector()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var data = db.Asistencia
                     .Select(a => new
@@ -94,7 +94,7 @@ namespace SistemaRRHH
 
         private void btnBuscar_Click(object sender, EventArgs e)
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var query = db.Asistencia.AsQueryable();
 
@@ -168,7 +168,7 @@ namespace SistemaRRHH
 
         private void CargarDatosPersonales()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var emp = db.Empleado.Include("Cargo").FirstOrDefault(e => e.IdEmpleado == _idEmpleadoActual);
                 if (emp != null)
@@ -183,7 +183,7 @@ namespace SistemaRRHH
 
         private void CargarHistorialEmpleado()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var lista = db.Asistencia
                     .Where(a => a.IdEmpleado == _idEmpleadoActual)
@@ -203,7 +203,7 @@ namespace SistemaRRHH
 
         private void VerificarAsistenciaEnCurso()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var hoy = DateTime.Now.Date;
                 var asistenciaHoy = db.Asistencia.FirstOrDefault(a => a.IdEmpleado == _idEmpleadoActual && a.Fecha == hoy);
@@ -235,7 +235,7 @@ namespace SistemaRRHH
 
         private void IniciarAsistencia()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var asistencia = new Asistencia
                 {
@@ -266,7 +266,7 @@ namespace SistemaRRHH
 
             timerAsistencia.Stop();
 
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var hoy = DateTime.Now.Date;
                 var asistencia = db.Asistencia.FirstOrDefault(a => a.IdEmpleado == _idEmpleadoActual && a.Fecha == hoy);
