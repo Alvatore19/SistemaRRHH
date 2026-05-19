@@ -157,6 +157,68 @@ namespace SistemaRRHH
             timerAsistencia.Tick += TimerAsistencia_Tick;
         }
 
+        private void btnSimular_Click(object sender, EventArgs e)
+        {
+            DialogResult r = MessageBox.Show("¿Desea simular una jornada completa de 8 horas instantáneamente?", "Simulación", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+            if (r == DialogResult.No) return;
+
+            using (var db = new SistemaRRHHEntities2())
+            {
+                var hoy = DateTime.Now.Date;
+                var asistencia = db.Asistencia.FirstOrDefault(a => a.IdEmpleado == _idEmpleadoActual && a.Fecha == hoy);
+
+                // Caso 1: No había iniciado la jornada. La creamos de cero y la cerramos.
+                if (asistencia == null)
+                {
+                    asistencia = new Asistencia
+                    {
+                        LlaveHash = _idEmpleadoActual + "_" + hoy.ToString("yyyyMMdd"),
+                        IdEmpleado = _idEmpleadoActual,
+                        Fecha = hoy,
+                        HoraEntrada = DateTime.Now.AddHours(-8), // Le restamos 8 horas exactas a la hora actual
+                        HoraSalida = DateTime.Now,
+                        HorasTrabajadas = 8.00m,
+                        EstadoJornada = "A Tiempo"
+                    };
+                    db.Asistencia.Add(asistencia);
+                }
+                // Caso 2: Ya estaba "En Proceso". Alteramos la hora de entrada en el pasado y la cerramos.
+                else if (asistencia.EstadoJornada == "En Proceso")
+                {
+                    asistencia.HoraEntrada = DateTime.Now.AddHours(-8);
+                    asistencia.HoraSalida = DateTime.Now;
+                    asistencia.HorasTrabajadas = 8.00m;
+                    asistencia.EstadoJornada = "A Tiempo";
+                }
+                else
+                {
+                    MessageBox.Show("La jornada de hoy ya fue completada y no se puede simular de nuevo.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                db.SaveChanges();
+            }
+
+            // Detenemos los procesos en memoria si el timer estaba corriendo
+            if (trabajando) timerAsistencia.Stop();
+            trabajando = false;
+
+            // Actualizamos toda la interfaz de golpe
+            lblEstadoActual.Text = "Estado: FINALIZADO (Simulado)";
+            lblContador.Text = "08:00:00";
+            btnAccionAsistencia.Text = "JORNADA COMPLETADA";
+            btnAccionAsistencia.BackColor = Color.Gray;
+            btnAccionAsistencia.Enabled = false;
+
+            btnSimular.Enabled = false; // Apagamos el botón de simular para evitar dobles clics
+            lblHorasExtra.Text = "Horas Extra: 0.00\nPago Extra: $0.00";
+
+            // Refrescamos la tabla para que se vea el registro
+            CargarHistorialEmpleado();
+
+            MessageBox.Show("Jornada de 8 horas simulada con éxito en la base de datos.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
         private void TimerAsistencia_Tick(object sender, EventArgs e)
         {
             if (trabajando)
@@ -223,6 +285,8 @@ namespace SistemaRRHH
                     btnAccionAsistencia.Text = "JORNADA COMPLETADA";
                     btnAccionAsistencia.BackColor = Color.Gray;
                     lblEstadoActual.Text = "Estado: FINALIZADO";
+
+                    btnSimular.Enabled = false;
                 }
             }
         }

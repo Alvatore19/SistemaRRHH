@@ -113,103 +113,77 @@ CREATE TABLE SolicitudPermiso(
     CONSTRAINT FK_Permiso_Empleado FOREIGN KEY(IdEmpleado) REFERENCES Empleado(IdEmpleado) ON DELETE CASCADE ON UPDATE CASCADE
 );
 GO
+-- ==============================================================
+-- 1. LIMPIEZA DE DATOS (DELETE)
+-- Se borran de "hijo" a "padre" para no romper las Foreign Keys
+-- ==============================================================
+DELETE FROM SolicitudPermiso;
+DELETE FROM Asistencia;
+DELETE FROM BoletaPago;
+DELETE FROM HistorialSalarial;
+DELETE FROM SolicitudDespido;
+DELETE FROM Empleado;
+DELETE FROM Cargo;
+DELETE FROM Departamento;
 
--- ==============================================
--- 2. Inserción de Datos de Prueba (Mock Data)
--- ==============================================
+-- ==============================================================
+-- 2. INSERCIÓN DE DATOS QUEMADOS (Mock Data Optimizada)
+-- ==============================================================
 
-INSERT INTO Cargo (NombreRol, NivelJerarquico, SalarioBase, BonoEscala1, BonoEscala2, BonoEscala3) 
-VALUES 
-('Director General', 1, 3500.00, 150.00, 300.00, 500.00),
-('Analista de RRHH', 2, 900.00, 40.00, 80.00, 150.00),
-('Empleado', 3, 600.00, 25.00, 50.00, 100.00);
+-- 2.1 Departamentos (Faltaban en tu script original)
+INSERT INTO Departamento (NombreDepartamento)
+VALUES
+('Dirección Ejecutiva'),
+('Recursos Humanos'),
+('Operaciones');
 
--- Inserción del Director General (Raíz del Árbol) - (Incluye el SalarioActual)
-INSERT INTO Empleado (IdEmpleado, IdCargo, IdJefe, NombreCompleto, DocumentoLegal, EstadoActivo, Contrasena, CorreoElectronico, SalarioActual) 
-VALUES 
-('EMP-1', 1, NULL, 'Alejandro Alvarenga', '12345678-9', 1, 'director123', 'aalvarenga@empresa.com', 3500.00);
+-- 2.2 Cargos (Ahora vinculados a su departamento real mediante IdDepartamento)
+INSERT INTO Cargo (NombreRol, NivelJerarquico, SalarioBase, BonoEscala1, BonoEscala2, BonoEscala3, IdDepartamento)
+VALUES
+('Director General', 1, 3500.00, 150.00, 300.00, 500.00, 1),
+('Analista de RRHH', 2, 900.00, 40.00, 80.00, 150.00, 2),
+('Empleado', 3, 600.00, 25.00, 50.00, 100.00, 3);
 
--- Inserción de Empleados - (Incluyen el SalarioActual base)
-INSERT INTO Empleado (IdEmpleado, IdCargo, IdJefe, NombreCompleto, DocumentoLegal, EstadoActivo, Contrasena, CorreoElectronico, SalarioActual) 
-VALUES 
+-- 2.3 Empleados (Mismas credenciales, IDs y sueldos)
+INSERT INTO Empleado (IdEmpleado, IdCargo, IdJefe, NombreCompleto, DocumentoLegal, EstadoActivo, Contrasena, CorreoElectronico, SalarioActual)
+VALUES
+('EMP-1', 1, NULL, 'Alejandro Alvarenga', '12345678-9', 1, 'director123', 'aalvarenga@empresa.com', 3500.00),
 ('EMP-2', 2, 'EMP-1', 'Roberto Sanchez', '23456789-0', 1, 'analista123', 'rsanchez@empresa.com', 900.00),
 ('EMP-3', 2, 'EMP-1', 'Maria Fernanda Lopez', '34567890-1', 1, 'analista123', 'mlopez@empresa.com', 900.00),
 ('EMP-4', 3, 'EMP-2', 'Carlos Martinez', '45678901-2', 1, 'empleado123', 'cmartinez@empresa.com', 600.00),
 ('EMP-5', 3, 'EMP-3', 'Lucia Gomez', '56789012-3', 1, 'empleado123', 'lgomez@empresa.com', 600.00);
 
--- Historial Salarial - (Incluye el texto de MotivoJustificacion)
-INSERT INTO HistorialSalarial (IdEmpleado, Monto, TipoModificacion, MotivoJustificacion, FechaAplicacion) 
-VALUES 
+-- 2.4 Historial Salarial (Agregado registro inicial para EMP-5)
+INSERT INTO HistorialSalarial (IdEmpleado, Monto, TipoModificacion, MotivoJustificacion, FechaAplicacion)
+VALUES
 ('EMP-4', 600.00, 'Ingreso Inicial', 'Asignación de salario base por nueva contratación', '2026-01-01'),
-('EMP-4', 100.00, 'Bono Rendimiento', 'Cumplimiento excepcional de metas del primer trimestre', '2026-03-15');
+('EMP-4', 100.00, 'Bono Rendimiento', 'Cumplimiento excepcional de metas del primer trimestre', '2026-03-15'),
+('EMP-5', 600.00, 'Ingreso Inicial', 'Asignación de salario base por nueva contratación', '2026-01-15');
 
--- Boletas de Pago
+-- 2.5 Boletas de Pago
 INSERT INTO BoletaPago (IdEmpleado, MesCorrespondiente, Salario, Bonos, Descuentos, FechaEmision)
-VALUES 
+VALUES
 ('EMP-4', 'Marzo 2026', 1200.00, 100.00, 120.00, '2026-03-31'),
 ('EMP-5', 'Marzo 2026', 900.00, 0.00, 90.00, '2026-03-31');
 
--- Control de Asistencia
-INSERT INTO Asistencia (LlaveHash, IdEmpleado, Fecha, HoraEntrada, HoraSalida, HorasTrabajadas, EstadoJornada) 
-VALUES 
-('45678901-2_20260331', 'EMP-4', '2026-03-31', '2026-03-31 08:00:00', '2026-03-31 17:00:00', 8.0, 'A Tiempo');
+-- 2.6 Control de Asistencia (Añadido EMP-5 para que también tenga datos de prueba)
+INSERT INTO Asistencia (LlaveHash, IdEmpleado, Fecha, HoraEntrada, HoraSalida, HorasTrabajadas, EstadoJornada)
+VALUES
+('45678901-2_20260331', 'EMP-4', '2026-03-31', '2026-03-31 08:00:00', '2026-03-31 17:00:00', 8.0, 'A Tiempo'),
+('56789012-3_20260331', 'EMP-5', '2026-03-31', '2026-03-31 08:15:00', '2026-03-31 17:00:00', 7.75, 'Incompleto');
 
--- Solicitudes de Permisos - (Los días fueron convertidos a horas: 5 días = 40 horas)
-INSERT INTO SolicitudPermiso (IdEmpleado, TipoPermiso, NivelPrioridad, EstadoAprobacion, CantidadHoras, MotivoDetallado, RutaComprobante) 
-VALUES 
+-- 2.7 Solicitudes de Permisos
+INSERT INTO SolicitudPermiso (IdEmpleado, TipoPermiso, NivelPrioridad, EstadoAprobacion, CantidadHoras, MotivoDetallado, RutaComprobante)
+VALUES
 ('EMP-5', 'Vacaciones Anuales', 3, 'Pendiente', 40.00, 'Solicitud de vacaciones anuales correspondientes a ley para viaje familiar.', NULL),
 ('EMP-4', 'Incapacidad Medica', 1, 'Aprobado', 48.00, 'Incapacidad extendida por el ISSS debido a infección estomacal severa.', 'C:\Documentos\Incapacidad_ISSS_EMP4.pdf');
-GO
 
--- ==============================================
--- 2. Inserción de Datos de Prueba (Mock Data)
--- ==============================================
-
-INSERT INTO Cargo (NombreRol, NivelJerarquico, SalarioBase, BonoEscala1, BonoEscala2, BonoEscala3) 
-VALUES 
-('Director General', 1, 3500.00, 150.00, 300.00, 500.00),
-('Analista de RRHH', 2, 900.00, 40.00, 80.00, 150.00),
-('Empleado', 3, 600.00, 25.00, 50.00, 100.00);
-
--- Inserción del Director General (Raíz del Árbol) - (Incluye el SalarioActual)
-INSERT INTO Empleado (IdEmpleado, IdCargo, IdJefe, NombreCompleto, DocumentoLegal, EstadoActivo, Contrasena, CorreoElectronico, SalarioActual) 
-VALUES 
-('EMP-1', 1, NULL, 'Alejandro Alvarenga', '12345678-9', 1, 'director123', 'aalvarenga@empresa.com', 3500.00);
-
--- Inserción de Empleados - (Incluyen el SalarioActual base)
-INSERT INTO Empleado (IdEmpleado, IdCargo, IdJefe, NombreCompleto, DocumentoLegal, EstadoActivo, Contrasena, CorreoElectronico, SalarioActual) 
-VALUES 
-('EMP-2', 2, 'EMP-1', 'Roberto Sanchez', '23456789-0', 1, 'analista123', 'rsanchez@empresa.com', 900.00),
-('EMP-3', 2, 'EMP-1', 'Maria Fernanda Lopez', '34567890-1', 1, 'analista123', 'mlopez@empresa.com', 900.00),
-('EMP-4', 3, 'EMP-2', 'Carlos Martinez', '45678901-2', 1, 'empleado123', 'cmartinez@empresa.com', 600.00),
-('EMP-5', 3, 'EMP-3', 'Lucia Gomez', '56789012-3', 1, 'empleado123', 'lgomez@empresa.com', 600.00);
-
--- Historial Salarial - (Incluye el texto de MotivoJustificacion)
-INSERT INTO HistorialSalarial (IdEmpleado, Monto, TipoModificacion, MotivoJustificacion, FechaAplicacion) 
-VALUES 
-('EMP-4', 600.00, 'Ingreso Inicial', 'Asignación de salario base por nueva contratación', '2026-01-01'),
-('EMP-4', 100.00, 'Bono Rendimiento', 'Cumplimiento excepcional de metas del primer trimestre', '2026-03-15');
-
--- Boletas de Pago
-INSERT INTO BoletaPago (IdEmpleado, MesCorrespondiente, Salario, Bonos, Descuentos, FechaEmision)
-VALUES 
-('EMP-4', 'Marzo 2026', 1200.00, 100.00, 120.00, '2026-03-31'),
-('EMP-5', 'Marzo 2026', 900.00, 0.00, 90.00, '2026-03-31');
-
--- Control de Asistencia
-INSERT INTO Asistencia (LlaveHash, IdEmpleado, Fecha, HoraEntrada, HoraSalida, HorasTrabajadas, EstadoJornada) 
-VALUES 
-('45678901-2_20260331', 'EMP-4', '2026-03-31', '2026-03-31 08:00:00', '2026-03-31 17:00:00', 8.0, 'A Tiempo');
-
--- Solicitudes de Permisos - (Los días fueron convertidos a horas: 5 días = 40 horas)
-INSERT INTO SolicitudPermiso (IdEmpleado, TipoPermiso, NivelPrioridad, EstadoAprobacion, CantidadHoras, MotivoDetallado, RutaComprobante) 
-VALUES 
-('EMP-5', 'Vacaciones Anuales', 3, 'Pendiente', 40.00, 'Solicitud de vacaciones anuales correspondientes a ley para viaje familiar.', NULL),
-('EMP-4', 'Incapacidad Medica', 1, 'Aprobado', 48.00, 'Incapacidad extendida por el ISSS debido a infección estomacal severa.', 'C:\Documentos\Incapacidad_ISSS_EMP4.pdf');
+-- 2.8 Solicitud de Despido (Datos de prueba para que la tabla no quede vacía)
+INSERT INTO SolicitudDespido (IdSolicitante, IdEmpleadoADespedir, IdNuevoJefeAsignado, MotivoDespido, EstadoAprobacion, MotivoRechazo)
+VALUES
+('EMP-2', 'EMP-4', 'EMP-3', 'Reestructuración del departamento de operaciones.', 'Pendiente', NULL);
 GO
 
 -- ===================================================
 -- 3. Alteración de Tablas para Nuevos Requerimientos
 -- ===================================================
-
-select * from Empleado;
