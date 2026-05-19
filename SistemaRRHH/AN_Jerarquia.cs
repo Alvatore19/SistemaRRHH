@@ -17,6 +17,25 @@ namespace SistemaRRHH
             Raiz = null;
         }
 
+
+        // Dentro de AN_Jerarquia
+        public List<NodoEmpleado> ObtenerTodosLosNodos()
+        {
+            List<NodoEmpleado> lista = new List<NodoEmpleado>();
+            Recorrer(Raiz, lista);
+            return lista;
+        }
+
+
+
+        private void Recorrer(NodoEmpleado nodo, List<NodoEmpleado> lista)
+        {
+            if (nodo == null) return;
+            lista.Add(nodo);
+            foreach (NodoEmpleado hijo in nodo.Subalternos)
+                Recorrer(hijo, lista);
+        }
+
         // Método recursivo para buscar un nodo por su ID
         public NodoEmpleado Buscar(string idBuscado, NodoEmpleado nodoActual)
         {
@@ -41,9 +60,8 @@ namespace SistemaRRHH
         {
             if (Raiz == null)
             {
-                Raiz = nuevoEmpleado; // Es el jefe máximo
+                Raiz = nuevoEmpleado; 
 
-                // Enviar correo para el Jefe Máximo
                EnviarConfirmacion(nuevoEmpleado, "N/A (Jefe Máximo)");
                 return true;
             }
@@ -55,7 +73,6 @@ namespace SistemaRRHH
                 nuevoEmpleado.Jefe = jefe;
                 jefe.Subalternos.Add(nuevoEmpleado);
 
-                // Enviar correo con la info del nuevo empleado y su jefe encontrado
                 EnviarConfirmacion(nuevoEmpleado, jefe.Nombre);
                 return true;
             }
@@ -71,7 +88,7 @@ namespace SistemaRRHH
             // CASO 1: Es la Raíz
             if (nodoAEliminar == Raiz)
             {
-                if (nodoAEliminar.Subalternos.Count > 0) return false; // Protegemos que no borren al dueño si hay empleados
+                if (nodoAEliminar.Subalternos.Count > 0) return false; 
                 Raiz = null;
                 return true;
             }
@@ -126,10 +143,9 @@ namespace SistemaRRHH
                         // A. No puede ser jefe de sí mismo
                         if (nuevoJefe.Id == empAEditar.Id) return false;
 
-                        // B. Evitar ciclos infinitos (El nuevo jefe no puede ser su subordinado)
+                        // B. Evitar ciclos infinitos
                         if (Buscar(nuevoJefe.Id, empAEditar) != null) return false;
 
-                        // --- Hacemos el cambio en el Árbol ---
                         empAEditar.Jefe.Subalternos.Remove(empAEditar); 
                         empAEditar.Jefe = nuevoJefe;                    
                         nuevoJefe.Subalternos.Add(empAEditar);         
@@ -137,7 +153,7 @@ namespace SistemaRRHH
                 }
             }
 
-            return true; // Todo salió bien
+            return true; 
         }
 
         public bool FusionarDepartamentos(string idGanador, string idPerdedor, string nuevoCargoGanador)

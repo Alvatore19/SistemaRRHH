@@ -12,18 +12,18 @@ namespace SistemaRRHH
     using System;
     using System.Collections.Generic;
     
-    public partial class SolicitudPermiso
+    public partial class Departamento
     {
-        public int IdSolicitud { get; set; }
-        public string IdEmpleado { get; set; }
-        public string TipoPermiso { get; set; }
-        public int NivelPrioridad { get; set; }
-        public System.DateTime FechaSolicitud { get; set; }
-        public string EstadoAprobacion { get; set; }
-        public string MotivoDetallado { get; set; }
-        public string RutaComprobante { get; set; }
-        public decimal CantidadHoras { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public Departamento()
+        {
+            this.Cargo = new HashSet<Cargo>();
+        }
     
-        public virtual Empleado Empleado { get; set; }
+        public int IdDepartamento { get; set; }
+        public string NombreDepartamento { get; set; }
+    
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Cargo> Cargo { get; set; }
     }
 }

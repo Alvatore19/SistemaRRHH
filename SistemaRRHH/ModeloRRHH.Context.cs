@@ -13,10 +13,10 @@ namespace SistemaRRHH
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class SistemaRRHHEntities : DbContext
+    public partial class SistemaRRHHEntities2 : DbContext
     {
-        public SistemaRRHHEntities()
-            : base("name=SistemaRRHHEntities")
+        public SistemaRRHHEntities2()
+            : base("name=SistemaRRHHEntities2")
         {
         }
     
@@ -26,10 +26,12 @@ namespace SistemaRRHH
         }
     
         public virtual DbSet<Asistencia> Asistencia { get; set; }
+        public virtual DbSet<BoletaPago> BoletaPago { get; set; }
         public virtual DbSet<Cargo> Cargo { get; set; }
+        public virtual DbSet<Departamento> Departamento { get; set; }
         public virtual DbSet<Empleado> Empleado { get; set; }
         public virtual DbSet<HistorialSalarial> HistorialSalarial { get; set; }
+        public virtual DbSet<SolicitudDespido> SolicitudDespido { get; set; }
         public virtual DbSet<SolicitudPermiso> SolicitudPermiso { get; set; }
-        public virtual DbSet<BoletaPago> BoletaPago { get; set; }
     }
 }

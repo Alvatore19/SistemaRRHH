@@ -18,10 +18,12 @@ namespace SistemaRRHH
         public Empleado()
         {
             this.Asistencia = new HashSet<Asistencia>();
+            this.BoletaPago = new HashSet<BoletaPago>();
+            this.SolicitudDespido = new HashSet<SolicitudDespido>();
+            this.SolicitudDespido1 = new HashSet<SolicitudDespido>();
             this.Empleado1 = new HashSet<Empleado>();
             this.HistorialSalarial = new HashSet<HistorialSalarial>();
             this.SolicitudPermiso = new HashSet<SolicitudPermiso>();
-            this.BoletaPago = new HashSet<BoletaPago>();
         }
     
         public string IdEmpleado { get; set; }
@@ -31,10 +33,18 @@ namespace SistemaRRHH
         public string DocumentoLegal { get; set; }
         public bool EstadoActivo { get; set; }
         public string Contrasena { get; set; }
+        public string CorreoElectronico { get; set; }
+        public decimal SalarioActual { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Asistencia> Asistencia { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<BoletaPago> BoletaPago { get; set; }
         public virtual Cargo Cargo { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<SolicitudDespido> SolicitudDespido { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<SolicitudDespido> SolicitudDespido1 { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Empleado> Empleado1 { get; set; }
         public virtual Empleado Empleado2 { get; set; }
@@ -42,7 +52,5 @@ namespace SistemaRRHH
         public virtual ICollection<HistorialSalarial> HistorialSalarial { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<SolicitudPermiso> SolicitudPermiso { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<BoletaPago> BoletaPago { get; set; }
     }
 }

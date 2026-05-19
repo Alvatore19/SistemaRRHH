@@ -67,7 +67,7 @@ namespace SistemaRRHH
         // ==========================================
         private void CargarHistorialDirector()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var historialCompleto = db.SolicitudPermiso
                                           .Include("Empleado")
@@ -89,7 +89,7 @@ namespace SistemaRRHH
         private void CargarColaAnalista()
         {
             miColaPermisos = new ColaPrioridadPermisos();
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var pendientes = db.SolicitudPermiso
                                    .Include("Empleado")
@@ -105,8 +105,7 @@ namespace SistemaRRHH
                         TipoPermiso = sol.TipoPermiso,
                         NivelPrioridad = sol.NivelPrioridad,
                         FechaSolicitud = sol.FechaSolicitud,
-                        CantidadTiempo = sol.CantidadTiempo,
-                        UnidadTiempo = sol.UnidadTiempo,
+                        CantidadHoras = sol.CantidadHoras, 
                         MotivoDetallado = sol.MotivoDetallado,
                         RutaComprobante = sol.RutaComprobante
                     };
@@ -159,7 +158,7 @@ namespace SistemaRRHH
             {
                 NodoPermiso procesado = miColaPermisos.Desencolar();
 
-                using (var db = new SistemaRRHHEntities())
+                using (var db = new SistemaRRHHEntities2())
                 {
                     var solicitudDb = db.SolicitudPermiso.Find(procesado.IdSolicitud);
                     solicitudDb.EstadoAprobacion = accion;
@@ -176,7 +175,7 @@ namespace SistemaRRHH
         // ==========================================
         private void CargarHistorialEmpleado()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var misPermisos = db.SolicitudPermiso
                                     .Where(s => s.IdEmpleado == _idEmpleadoActual)
@@ -186,7 +185,7 @@ namespace SistemaRRHH
                                         Tipo = s.TipoPermiso,
                                         Prioridad = s.NivelPrioridad,
                                         Fecha = s.FechaSolicitud,
-                                        Tiempo = s.CantidadTiempo + " " + s.UnidadTiempo,
+                                        Tiempo = s.CantidadHoras + " hrs", 
                                         Motivo = s.MotivoDetallado,
                                         Estado = s.EstadoAprobacion
                                     }).ToList();
@@ -221,7 +220,7 @@ namespace SistemaRRHH
 
             try
             {
-                using (var db = new SistemaRRHHEntities())
+                using (var db = new SistemaRRHHEntities2())
                 {
                     SolicitudPermiso nueva = new SolicitudPermiso
                     {
@@ -230,8 +229,7 @@ namespace SistemaRRHH
                         NivelPrioridad = prioridad,
                         FechaSolicitud = DateTime.Now,
                         EstadoAprobacion = "Pendiente",
-                        CantidadTiempo = (int)numTiempoEmp.Value,
-                        UnidadTiempo = cmbUnidadEmp.Text,
+                        CantidadHoras = (decimal)numTiempoEmp.Value, 
                         MotivoDetallado = txtMotivoEmp.Text,
                         RutaComprobante = null
                     };

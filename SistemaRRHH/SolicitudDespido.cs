@@ -12,18 +12,18 @@ namespace SistemaRRHH
     using System;
     using System.Collections.Generic;
     
-    public partial class SolicitudPermiso
+    public partial class SolicitudDespido
     {
         public int IdSolicitud { get; set; }
-        public string IdEmpleado { get; set; }
-        public string TipoPermiso { get; set; }
-        public int NivelPrioridad { get; set; }
-        public System.DateTime FechaSolicitud { get; set; }
+        public string IdSolicitante { get; set; }
+        public string IdEmpleadoADespedir { get; set; }
+        public string IdNuevoJefeAsignado { get; set; }
+        public string MotivoDespido { get; set; }
         public string EstadoAprobacion { get; set; }
-        public string MotivoDetallado { get; set; }
-        public string RutaComprobante { get; set; }
-        public decimal CantidadHoras { get; set; }
+        public string MotivoRechazo { get; set; }
+        public System.DateTime FechaSolicitud { get; set; }
     
         public virtual Empleado Empleado { get; set; }
+        public virtual Empleado Empleado1 { get; set; }
     }
 }

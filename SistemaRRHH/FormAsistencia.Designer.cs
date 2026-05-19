@@ -1,6 +1,6 @@
 ﻿namespace SistemaRRHH
 {
-    partial class FrmAsistencia
+    partial class FormAsistencia
     {
         private System.ComponentModel.IContainer components = null;
 
@@ -38,6 +38,7 @@
             this.lblDUI = new System.Windows.Forms.Label();
             this.lblCargo = new System.Windows.Forms.Label();
             this.btnAccionAsistencia = new System.Windows.Forms.Button();
+            this.btnSimular = new System.Windows.Forms.Button();
             this.lblEstadoActual = new System.Windows.Forms.Label();
             this.lblHorasExtra = new System.Windows.Forms.Label();
             this.lblContador = new System.Windows.Forms.Label();
@@ -117,6 +118,7 @@
             this.pnlEmpleado.BackColor = System.Drawing.Color.White;
             this.pnlEmpleado.Controls.Add(this.gbDatos);
             this.pnlEmpleado.Controls.Add(this.btnAccionAsistencia);
+            this.pnlEmpleado.Controls.Add(this.btnSimular);
             this.pnlEmpleado.Controls.Add(this.lblEstadoActual);
             this.pnlEmpleado.Controls.Add(this.lblHorasExtra);
             this.pnlEmpleado.Controls.Add(this.lblContador);
@@ -152,6 +154,19 @@
             this.btnAccionAsistencia.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAccionAsistencia.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnAccionAsistencia.Click += new System.EventHandler(this.btnAccionAsistencia_Click);
+
+            // 
+            // btnSimular
+            // 
+            this.btnSimular.BackColor = System.Drawing.Color.LightSkyBlue;
+            this.btnSimular.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSimular.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnSimular.Location = new System.Drawing.Point(730, 110);
+            this.btnSimular.Name = "btnSimular";
+            this.btnSimular.Size = new System.Drawing.Size(150, 40);
+            this.btnSimular.Text = "⏱️ SIMULAR 8H";
+            this.btnSimular.UseVisualStyleBackColor = false;
+            this.btnSimular.Click += new System.EventHandler(this.btnSimular_Click);
 
             this.lblContador.Location = new System.Drawing.Point(450, 100);
             this.lblContador.AutoSize = true;
@@ -223,5 +238,6 @@
         private System.Windows.Forms.Label lblHorasExtra;
         private System.Windows.Forms.Label lblContador;
         private System.Windows.Forms.DataGridView dgvHistorialPersonal;
+        private System.Windows.Forms.Button btnSimular;
     }
 }

@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace SistemaRRHH
 {
-    public partial class FrmAsistencia : Form
+    public partial class FormAsistencia : Form
     {
         private string _nivelUsuario;
         private string _idEmpleadoActual;
@@ -16,7 +16,7 @@ namespace SistemaRRHH
         private DateTime entrada;
         private Timer timerAsistencia;
 
-        public FrmAsistencia(string nivel, string idEmpleado)
+        public FormAsistencia(string nivel, string idEmpleado)
         {
             InitializeComponent();
             _nivelUsuario = nivel;
@@ -73,7 +73,7 @@ namespace SistemaRRHH
 
         private void CargarTodoDirector()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var data = db.Asistencia
                     .Select(a => new
@@ -94,7 +94,7 @@ namespace SistemaRRHH
 
         private void btnBuscar_Click(object sender, EventArgs e)
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var query = db.Asistencia.AsQueryable();
 
@@ -136,7 +136,7 @@ namespace SistemaRRHH
                 if (estado == "A Tiempo") row.DefaultCellStyle.BackColor = Color.LightGreen;
                 else if (estado == "Media Jornada") row.DefaultCellStyle.BackColor = Color.Khaki;
                 else if (estado == "Incompleto") row.DefaultCellStyle.BackColor = Color.LightCoral;
-                else row.DefaultCellStyle.BackColor = Color.LightSkyBlue; // En Proceso
+                else row.DefaultCellStyle.BackColor = Color.LightSkyBlue; 
             }
         }
 
@@ -157,6 +157,68 @@ namespace SistemaRRHH
             timerAsistencia.Tick += TimerAsistencia_Tick;
         }
 
+        private void btnSimular_Click(object sender, EventArgs e)
+        {
+            DialogResult r = MessageBox.Show("¿Desea simular una jornada completa de 8 horas instantáneamente?", "Simulación", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+            if (r == DialogResult.No) return;
+
+            using (var db = new SistemaRRHHEntities2())
+            {
+                var hoy = DateTime.Now.Date;
+                var asistencia = db.Asistencia.FirstOrDefault(a => a.IdEmpleado == _idEmpleadoActual && a.Fecha == hoy);
+
+                // Caso 1: No había iniciado la jornada. La creamos de cero y la cerramos.
+                if (asistencia == null)
+                {
+                    asistencia = new Asistencia
+                    {
+                        LlaveHash = _idEmpleadoActual + "_" + hoy.ToString("yyyyMMdd"),
+                        IdEmpleado = _idEmpleadoActual,
+                        Fecha = hoy,
+                        HoraEntrada = DateTime.Now.AddHours(-8), // Le restamos 8 horas exactas a la hora actual
+                        HoraSalida = DateTime.Now,
+                        HorasTrabajadas = 8.00m,
+                        EstadoJornada = "A Tiempo"
+                    };
+                    db.Asistencia.Add(asistencia);
+                }
+                // Caso 2: Ya estaba "En Proceso". Alteramos la hora de entrada en el pasado y la cerramos.
+                else if (asistencia.EstadoJornada == "En Proceso")
+                {
+                    asistencia.HoraEntrada = DateTime.Now.AddHours(-8);
+                    asistencia.HoraSalida = DateTime.Now;
+                    asistencia.HorasTrabajadas = 8.00m;
+                    asistencia.EstadoJornada = "A Tiempo";
+                }
+                else
+                {
+                    MessageBox.Show("La jornada de hoy ya fue completada y no se puede simular de nuevo.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                db.SaveChanges();
+            }
+
+            // Detenemos los procesos en memoria si el timer estaba corriendo
+            if (trabajando) timerAsistencia.Stop();
+            trabajando = false;
+
+            // Actualizamos toda la interfaz de golpe
+            lblEstadoActual.Text = "Estado: FINALIZADO (Simulado)";
+            lblContador.Text = "08:00:00";
+            btnAccionAsistencia.Text = "JORNADA COMPLETADA";
+            btnAccionAsistencia.BackColor = Color.Gray;
+            btnAccionAsistencia.Enabled = false;
+
+            btnSimular.Enabled = false; // Apagamos el botón de simular para evitar dobles clics
+            lblHorasExtra.Text = "Horas Extra: 0.00\nPago Extra: $0.00";
+
+            // Refrescamos la tabla para que se vea el registro
+            CargarHistorialEmpleado();
+
+            MessageBox.Show("Jornada de 8 horas simulada con éxito en la base de datos.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
         private void TimerAsistencia_Tick(object sender, EventArgs e)
         {
             if (trabajando)
@@ -168,7 +230,7 @@ namespace SistemaRRHH
 
         private void CargarDatosPersonales()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var emp = db.Empleado.Include("Cargo").FirstOrDefault(e => e.IdEmpleado == _idEmpleadoActual);
                 if (emp != null)
@@ -183,7 +245,7 @@ namespace SistemaRRHH
 
         private void CargarHistorialEmpleado()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var lista = db.Asistencia
                     .Where(a => a.IdEmpleado == _idEmpleadoActual)
@@ -203,14 +265,13 @@ namespace SistemaRRHH
 
         private void VerificarAsistenciaEnCurso()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var hoy = DateTime.Now.Date;
                 var asistenciaHoy = db.Asistencia.FirstOrDefault(a => a.IdEmpleado == _idEmpleadoActual && a.Fecha == hoy);
 
                 if (asistenciaHoy != null && asistenciaHoy.EstadoJornada == "En Proceso")
                 {
-                    // Ya había marcado entrada, reactivamos el timer
                     entrada = asistenciaHoy.HoraEntrada.Value;
                     trabajando = true;
                     btnAccionAsistencia.Text = "🛑 FINALIZAR JORNADA";
@@ -220,11 +281,12 @@ namespace SistemaRRHH
                 }
                 else if (asistenciaHoy != null)
                 {
-                    // Ya terminó su jornada
                     btnAccionAsistencia.Enabled = false;
                     btnAccionAsistencia.Text = "JORNADA COMPLETADA";
                     btnAccionAsistencia.BackColor = Color.Gray;
                     lblEstadoActual.Text = "Estado: FINALIZADO";
+
+                    btnSimular.Enabled = false;
                 }
             }
         }
@@ -237,7 +299,7 @@ namespace SistemaRRHH
 
         private void IniciarAsistencia()
         {
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var asistencia = new Asistencia
                 {
@@ -268,7 +330,7 @@ namespace SistemaRRHH
 
             timerAsistencia.Stop();
 
-            using (var db = new SistemaRRHHEntities())
+            using (var db = new SistemaRRHHEntities2())
             {
                 var hoy = DateTime.Now.Date;
                 var asistencia = db.Asistencia.FirstOrDefault(a => a.IdEmpleado == _idEmpleadoActual && a.Fecha == hoy);
@@ -296,7 +358,7 @@ namespace SistemaRRHH
             lblEstadoActual.Text = "Estado: FINALIZADO";
             btnAccionAsistencia.Text = "JORNADA COMPLETADA";
             btnAccionAsistencia.BackColor = Color.Gray;
-            btnAccionAsistencia.Enabled = false; // Bloqueamos el botón para que no marque 2 veces
+            btnAccionAsistencia.Enabled = false; 
             CargarHistorialEmpleado();
         }
     }

@@ -65,6 +65,9 @@
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>
     <Compile Include="ColaPrioridadPermisos.cs" />
+    <Compile Include="Departamento.cs">
+      <DependentUpon>ModeloRRHH.tt</DependentUpon>
+    </Compile>
     <Compile Include="Empleado.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>
@@ -73,6 +76,12 @@
     </Compile>
     <Compile Include="FormDashboard.Designer.cs">
       <DependentUpon>FormDashboard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormGestionCargos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormGestionCargos.Designer.cs">
+      <DependentUpon>FormGestionCargos.cs</DependentUpon>
     </Compile>
     <Compile Include="FormPermisos.cs">
       <SubType>Form</SubType>
@@ -86,26 +95,26 @@
     <Compile Include="FormPortalEmpleado.Designer.cs">
       <DependentUpon>FormPortalEmpleado.cs</DependentUpon>
     </Compile>
-    <Compile Include="FrmAsistencia.cs">
+    <Compile Include="FormAsistencia.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FrmAsistencia.Designer.cs">
-      <DependentUpon>FrmAsistencia.cs</DependentUpon>
+    <Compile Include="FormAsistencia.Designer.cs">
+      <DependentUpon>FormAsistencia.cs</DependentUpon>
     </Compile>
-    <Compile Include="Gestion_Empleados.cs">
+    <Compile Include="FormGestionEmpleados.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Gestion_Empleados.Designer.cs">
-      <DependentUpon>Gestion_Empleados.cs</DependentUpon>
-    </Compile>
-    <Compile Include="HistorialSalarial.cs">
-      <DependentUpon>ModeloRRHH.tt</DependentUpon>
+    <Compile Include="FormGestionEmpleados.Designer.cs">
+      <DependentUpon>FormGestionEmpleados.cs</DependentUpon>
     </Compile>
     <Compile Include="FormLogin.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="FormLogin.Designer.cs">
       <DependentUpon>FormLogin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HistorialSalarial.cs">
+      <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>
     <Compile Include="ListaBoletas.cs" />
     <Compile Include="ModeloRRHH.Context.cs">
@@ -127,20 +136,29 @@
     <Compile Include="NodoEmpleado.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SolicitudDespido.cs">
+      <DependentUpon>ModeloRRHH.tt</DependentUpon>
+    </Compile>
     <Compile Include="SolicitudPermiso.cs">
       <DependentUpon>ModeloRRHH.tt</DependentUpon>
     </Compile>
     <EmbeddedResource Include="FormDashboard.resx">
       <DependentUpon>FormDashboard.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FormGestionCargos.resx">
+      <DependentUpon>FormGestionCargos.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FormPermisos.resx">
       <DependentUpon>FormPermisos.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Gestion_Empleados.resx">
-      <DependentUpon>Gestion_Empleados.cs</DependentUpon>
+    <EmbeddedResource Include="FormGestionEmpleados.resx">
+      <DependentUpon>FormGestionEmpleados.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormLogin.resx">
       <DependentUpon>FormLogin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormPortalEmpleado.resx">
+      <DependentUpon>FormPortalEmpleado.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
